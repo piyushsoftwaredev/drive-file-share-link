@@ -34,17 +34,19 @@ const FileView = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 bg-oxxfile-dark">
-      {isLoading || !file ? (
-        <div className="flex justify-center items-center py-20">
-          <div className="flex flex-col items-center">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-4" />
-            <p className="text-white">Loading file details...</p>
+    <div className="min-h-screen bg-gradient-to-b from-[#0f0a19] to-[#16121f] py-4 px-2 md:py-8 md:px-4">
+      <div className="container mx-auto max-w-3xl">
+        {isLoading || !file ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="flex flex-col items-center">
+              <Loader2 className="w-8 h-8 animate-spin text-oxxfile-purple mb-4" />
+              <p className="text-white">Loading file details...</p>
+            </div>
           </div>
-        </div>
-      ) : (
-        <FileDetails fileId={fileId} />
-      )}
+        ) : (
+          <FileDetails fileId={fileId} />
+        )}
+      </div>
     </div>
   );
 };

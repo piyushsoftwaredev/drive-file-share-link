@@ -50,7 +50,7 @@ const FileIcon: React.FC<FileIconProps> = ({ type = 'MKV', size = 'md' }) => {
 
   return (
     <div className={`${getSizeClasses()} flex flex-col relative rounded overflow-hidden shadow-lg`}>
-      <div className="flex-grow bg-gray-900 flex items-center justify-center">
+      <div className="flex-grow bg-[#1a1725] flex items-center justify-center border border-[#2a2440]">
         <span className="text-white text-xs font-semibold">{type}</span>
       </div>
       <div className={`h-1/4 ${getIconColor()}`}></div>
