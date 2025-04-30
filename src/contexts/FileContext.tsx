@@ -40,6 +40,7 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [files, setFiles] = useState<FileMetadata[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const API_KEY = 'AIzaSyBx2A9I8DtQUeCNW2LVqWZSbpWivnNkomI';
 
   useEffect(() => {
     // Load files from localStorage on initialization
@@ -76,75 +77,58 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return null;
   };
 
-  // Function to extract file name from Google Drive URL or ID
-  const extractFileName = (url: string, fileId: string): string => {
-    // Try to get filename from URL
-    const urlParts = url.split('/');
-    const queryParams = new URLSearchParams(url.split('?')[1] || '');
+  // Function to format file size
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
     
-    // Check if filename is in the URL path
-    for (let i = 0; i < urlParts.length; i++) {
-      if (urlParts[i].includes('.') && !urlParts[i].includes('google.com')) {
-        return decodeURIComponent(urlParts[i]);
-      }
-    }
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
     
-    // Check if filename is in query parameters
-    if (queryParams.has('name')) {
-      return decodeURIComponent(queryParams.get('name') || `File_${fileId.substring(0, 8)}`);
-    }
-    
-    // Default filename based on ID
-    return `File_${fileId.substring(0, 8)}`;
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Function to guess file type from name
-  const guessFileTypeFromName = (fileName: string): { type: string; mimeType: string } => {
-    const extension = fileName.split('.').pop()?.toLowerCase() || '';
-    
-    switch (extension) {
-      case 'mp4':
-        return { type: 'MP4', mimeType: 'video/mp4' };
-      case 'mkv':
-        return { type: 'MKV', mimeType: 'video/x-matroska' };
-      case 'avi':
-        return { type: 'AVI', mimeType: 'video/x-msvideo' };
-      case 'mov':
-        return { type: 'MOV', mimeType: 'video/quicktime' };
-      case 'pdf':
-        return { type: 'PDF', mimeType: 'application/pdf' };
-      case 'doc':
-      case 'docx':
-        return { type: 'DOC', mimeType: 'application/msword' };
-      case 'xls':
-      case 'xlsx':
-        return { type: 'XLS', mimeType: 'application/vnd.ms-excel' };
-      case 'ppt':
-      case 'pptx':
-        return { type: 'PPT', mimeType: 'application/vnd.ms-powerpoint' };
-      case 'zip':
-        return { type: 'ZIP', mimeType: 'application/zip' };
-      case 'rar':
-        return { type: 'RAR', mimeType: 'application/x-rar-compressed' };
-      case 'jpg':
-      case 'jpeg':
-        return { type: 'JPG', mimeType: 'image/jpeg' };
-      case 'png':
-        return { type: 'PNG', mimeType: 'image/png' };
-      case 'gif':
-        return { type: 'GIF', mimeType: 'image/gif' };
-      default:
-        return { type: 'FILE', mimeType: 'application/octet-stream' };
-    }
-  };
-
-  // Generate random file size for demo purposes
-  const generateRandomFileSize = (): { size: string; sizeInBytes: number } => {
-    const sizeMb = Math.floor(Math.random() * 5000) + 50;
-    return {
-      size: `${sizeMb} MB`,
-      sizeInBytes: sizeMb * 1024 * 1024
+  // Function to get file type from MIME type
+  const getFileTypeFromMimeType = (mimeType: string): string => {
+    const mimeTypeMap: Record<string, string> = {
+      'video/mp4': 'MP4',
+      'video/x-matroska': 'MKV',
+      'video/x-msvideo': 'AVI',
+      'video/quicktime': 'MOV',
+      'application/pdf': 'PDF',
+      'application/msword': 'DOC',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'DOCX',
+      'application/vnd.ms-excel': 'XLS',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
+      'application/vnd.ms-powerpoint': 'PPT',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'PPTX',
+      'application/zip': 'ZIP',
+      'application/x-rar-compressed': 'RAR',
+      'image/jpeg': 'JPG',
+      'image/png': 'PNG',
+      'image/gif': 'GIF',
     };
+
+    return mimeTypeMap[mimeType] || mimeType.split('/')[1]?.toUpperCase() || 'FILE';
+  };
+
+  // Function to fetch file details from Google Drive API
+  const fetchFileDetails = async (fileId: string): Promise<any> => {
+    try {
+      const response = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,mimeType,size,createdTime,fileExtension&supportsAllDrives=true&includeItemsFromAllDrives=true&key=${API_KEY}`
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Error fetching file details');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching from Google Drive API:', error);
+      throw error;
+    }
   };
 
   // Extract file info from Google Drive URL
@@ -166,23 +150,17 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!fileId) {
         throw new Error("Could not extract Google Drive file ID");
       }
+
+      // Fetch file details from Google API
+      const fileDetails = await fetchFileDetails(fileId);
+      console.log("API returned file details:", fileDetails);
       
-      // Extract or generate file name
-      let fileName = extractFileName(driveUrl, fileId);
-      
-      // If no extension, assign one randomly for demo
-      if (!fileName.includes('.')) {
-        const extensions = ['.mkv', '.mp4', '.pdf', '.zip', '.rar'];
-        fileName += extensions[Math.floor(Math.random() * extensions.length)];
-      }
-      
-      console.log("File name:", fileName);
-      
-      // Get file type and MIME type
-      const { type, mimeType } = guessFileTypeFromName(fileName);
-      
-      // Get file size
-      const { size, sizeInBytes } = generateRandomFileSize();
+      // Process file details
+      const fileName = fileDetails.name;
+      const mimeType = fileDetails.mimeType;
+      const fileType = getFileTypeFromMimeType(mimeType);
+      const sizeInBytes = Number(fileDetails.size) || 0;
+      const size = formatFileSize(sizeInBytes);
       
       // Create the file metadata
       const newFile: FileMetadata = {
@@ -190,9 +168,9 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: fileName,
         size,
         sizeInBytes,
-        type,
+        type: fileType,
         mimeType,
-        createdAt: new Date().toISOString(),
+        createdAt: fileDetails.createdTime || new Date().toISOString(),
         downloadUrl: `https://drive.google.com/uc?export=download&id=${fileId}`,
         shareLink: `/file/${randomId}`,
         sharedBy: "LDRIVE",
@@ -203,9 +181,6 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
 
       console.log("Created file metadata:", newFile);
-      
-      // Wait for simulated network delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Save to state and localStorage
       setFiles(prevFiles => {

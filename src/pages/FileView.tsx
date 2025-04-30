@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import FileDetails from '@/components/FileDetails';
 import { useFiles } from '@/contexts/FileContext';
@@ -8,18 +8,25 @@ import { toast } from 'sonner';
 
 const FileView = () => {
   const { id } = useParams<{ id: string }>();
-  const { getFileById } = useFiles();
+  const { getFileById, files } = useFiles();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
   const fileId = id || '';
   const file = getFileById(fileId);
 
   useEffect(() => {
-    if (!file && fileId) {
-      console.error(`File with ID ${fileId} not found`);
-      toast.error("File not found. Please check the URL or try again.");
-    }
-  }, [file, fileId]);
+    // Short delay to ensure files are loaded from localStorage
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      if (!getFileById(fileId) && fileId) {
+        console.error(`File with ID ${fileId} not found`);
+        toast.error("File not found. Please check the URL or try again.");
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [fileId, files]);
 
   if (!fileId) {
     navigate('/');
@@ -28,7 +35,7 @@ const FileView = () => {
 
   return (
     <div className="min-h-screen py-8 px-4 bg-oxxfile-dark">
-      {!file ? (
+      {isLoading || !file ? (
         <div className="flex justify-center items-center py-20">
           <div className="flex flex-col items-center">
             <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-4" />
