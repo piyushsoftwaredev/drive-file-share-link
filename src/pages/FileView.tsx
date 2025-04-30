@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import FileDetails from '@/components/FileDetails';
 import { useFiles } from '@/contexts/FileContext';
+import { Loader2 } from 'lucide-react';
 
 const FileView = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,8 +15,8 @@ const FileView = () => {
 
   useEffect(() => {
     if (!file && fileId) {
-      // If we can't find the file with this ID, maybe redirect or show an error
       console.error(`File with ID ${fileId} not found`);
+      // We'll let the FileDetails component handle the "not found" case
     }
   }, [file, fileId]);
 
@@ -25,7 +26,15 @@ const FileView = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen py-8 px-4 bg-oxxfile-dark">
+      {!file && (
+        <div className="flex justify-center items-center py-20">
+          <div className="flex flex-col items-center">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-4" />
+            <p className="text-white">Loading file details...</p>
+          </div>
+        </div>
+      )}
       <FileDetails fileId={fileId} />
     </div>
   );

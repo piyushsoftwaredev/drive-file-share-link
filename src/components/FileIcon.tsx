@@ -13,14 +13,26 @@ const FileIcon: React.FC<FileIconProps> = ({ type = 'MKV', size = 'md' }) => {
       case 'mkv':
       case 'mp4':
       case 'avi':
-        return 'bg-blue-500';
+      case 'mov':
+        return 'bg-blue-600';
       case 'pdf':
-        return 'bg-red-500';
+        return 'bg-red-600';
+      case 'doc':
+      case 'docx':
+        return 'bg-blue-800';
+      case 'xls':
+      case 'xlsx':
+        return 'bg-green-600';
       case 'zip':
       case 'rar':
-        return 'bg-yellow-500';
+        return 'bg-yellow-600';
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+        return 'bg-purple-600';
       default:
-        return 'bg-gray-500';
+        return 'bg-gray-600';
     }
   };
 
@@ -37,8 +49,8 @@ const FileIcon: React.FC<FileIconProps> = ({ type = 'MKV', size = 'md' }) => {
   };
 
   return (
-    <div className={`${getSizeClasses()} flex flex-col relative rounded overflow-hidden`}>
-      <div className="flex-grow bg-white/20 flex items-center justify-center">
+    <div className={`${getSizeClasses()} flex flex-col relative rounded overflow-hidden shadow-lg`}>
+      <div className="flex-grow bg-gray-900 flex items-center justify-center">
         <span className="text-white text-xs font-semibold">{type}</span>
       </div>
       <div className={`h-1/4 ${getIconColor()}`}></div>
