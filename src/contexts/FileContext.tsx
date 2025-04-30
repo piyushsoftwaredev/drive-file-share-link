@@ -55,6 +55,8 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const filePattern = /\/file\/d\/([^\/]+)(?:\/|$)/;
     // Pattern for format: https://drive.google.com/open?id={fileId}
     const openPattern = /[?&]id=([^&]+)/;
+    // Pattern for format: https://drive.google.com/uc?id={fileId}
+    const ucPattern = /\/uc\?(?:.+&)?id=([^&]+)/;
     
     let match = url.match(filePattern);
     if (match && match[1]) {
@@ -62,6 +64,11 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     match = url.match(openPattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+    
+    match = url.match(ucPattern);
     if (match && match[1]) {
       return match[1];
     }
@@ -78,13 +85,13 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check if filename is in the URL path
     for (let i = 0; i < urlParts.length; i++) {
       if (urlParts[i].includes('.') && !urlParts[i].includes('google.com')) {
-        return urlParts[i];
+        return decodeURIComponent(urlParts[i]);
       }
     }
     
     // Check if filename is in query parameters
     if (queryParams.has('name')) {
-      return queryParams.get('name') || `File_${fileId.substring(0, 8)}`;
+      return decodeURIComponent(queryParams.get('name') || `File_${fileId.substring(0, 8)}`);
     }
     
     // Default filename based on ID
@@ -146,15 +153,19 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     
     try {
-      // In a real app, this would call your backend API
-      // For now, we'll extract what we can from the URL
+      console.log("Processing URL:", driveUrl);
       
       // Generate random ID for share link
       const randomId = Array.from(Array(16), () => 
         Math.floor(Math.random() * 36).toString(36)).join('');
       
       // Extract Google Drive file ID
-      const fileId = extractGoogleDriveFileId(driveUrl) || randomId;
+      const fileId = extractGoogleDriveFileId(driveUrl);
+      console.log("Extracted file ID:", fileId);
+      
+      if (!fileId) {
+        throw new Error("Could not extract Google Drive file ID");
+      }
       
       // Extract or generate file name
       let fileName = extractFileName(driveUrl, fileId);
@@ -164,6 +175,8 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const extensions = ['.mkv', '.mp4', '.pdf', '.zip', '.rar'];
         fileName += extensions[Math.floor(Math.random() * extensions.length)];
       }
+      
+      console.log("File name:", fileName);
       
       // Get file type and MIME type
       const { type, mimeType } = guessFileTypeFromName(fileName);
@@ -182,13 +195,15 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
         createdAt: new Date().toISOString(),
         downloadUrl: `https://drive.google.com/uc?export=download&id=${fileId}`,
         shareLink: `/file/${randomId}`,
-        sharedBy: "Admin",
+        sharedBy: "LDRIVE",
         security: "End-to-end encrypted",
         accessibility: "Public",
         connection: "Fast",
         originalUrl: driveUrl
       };
 
+      console.log("Created file metadata:", newFile);
+      
       // Wait for simulated network delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -204,6 +219,7 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       setIsLoading(false);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      console.error("Error extracting file info:", errorMessage);
       setError(errorMessage);
       throw new Error(errorMessage);
     }

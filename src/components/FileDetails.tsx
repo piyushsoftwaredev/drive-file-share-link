@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Clock, Lock, Globe, Wifi, User, Download, Share2, QrCode, PlayCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { Card } from '@/components/ui/card';
 
 interface FileDetailsProps {
   fileId: string;
@@ -17,10 +18,10 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
 
   if (!file) {
     return (
-      <div className="flex flex-col items-center justify-center p-8">
+      <Card className="w-full max-w-3xl mx-auto p-8 bg-gray-900/50 border-gray-800">
         <h2 className="text-2xl font-bold text-white mb-4">File not found</h2>
         <p className="text-gray-400">The requested file could not be found.</p>
-      </div>
+      </Card>
     );
   }
 
