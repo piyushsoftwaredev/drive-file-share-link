@@ -20,7 +20,9 @@ import {
   FileText, 
   Settings, 
   Users, 
-  LogOut 
+  LogOut,
+  Import,
+  Settings2 
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -111,16 +113,40 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                 </SidebarMenuItem>
 
                 {isAdmin && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton 
-                      onClick={() => navigate('/users')}
-                      isActive={location.pathname === '/users'}
-                      tooltip="Users Management"
-                    >
-                      <Users className="mr-2" />
-                      <span>Users Management</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton 
+                        onClick={() => navigate('/users')}
+                        isActive={location.pathname === '/users'}
+                        tooltip="Users Management"
+                      >
+                        <Users className="mr-2" />
+                        <span>Users Management</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    
+                    <SidebarMenuItem>
+                      <SidebarMenuButton 
+                        onClick={() => navigate('/import-export')}
+                        isActive={location.pathname === '/import-export'}
+                        tooltip="Import/Export Files"
+                      >
+                        <Import className="mr-2" />
+                        <span>Import/Export</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+
+                    <SidebarMenuItem>
+                      <SidebarMenuButton 
+                        onClick={() => navigate('/mirror-options')}
+                        isActive={location.pathname === '/mirror-options'}
+                        tooltip="Mirror Options"
+                      >
+                        <Settings2 className="mr-2" />
+                        <span>Mirror Options</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </>
                 )}
               </SidebarMenu>
             </SidebarGroup>

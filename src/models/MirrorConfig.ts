@@ -24,17 +24,10 @@ export const DEFAULT_MIRRORS: Mirror[] = [
   },
   {
     id: 'mirror2',
-    name: 'Mirror 1',
-    baseUrl: 'https://mirror1.example.com/',
+    name: 'Pixel Download',
+    baseUrl: 'https://pixeldrain.com/api/file/',
     isEnabled: true,
     regenerationPeriod: 48,
-  },
-  {
-    id: 'mirror3',
-    name: 'Mirror 2',
-    baseUrl: 'https://mirror2.example.com/',
-    isEnabled: false,
-    regenerationPeriod: 72,
   }
 ];
 

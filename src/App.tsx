@@ -24,6 +24,8 @@ import ShareFiles from "@/pages/admin/ShareFiles";
 import SharedFiles from "@/pages/admin/SharedFiles";
 import AccountSettings from "@/pages/admin/AccountSettings";
 import UsersManagement from "@/pages/admin/UsersManagement";
+import ImportExport from "@/pages/admin/ImportExport";
+import MirrorOptions from "@/pages/admin/MirrorOptions";
 
 const queryClient = new QueryClient();
 
@@ -98,6 +100,14 @@ const App = () => (
                 <Route
                   path="/users"
                   element={<ProtectedRoute><UsersManagement /></ProtectedRoute>}
+                />
+                <Route
+                  path="/import-export"
+                  element={<ProtectedRoute><ImportExport /></ProtectedRoute>}
+                />
+                <Route
+                  path="/mirror-options"
+                  element={<ProtectedRoute><MirrorOptions /></ProtectedRoute>}
                 />
 
                 {/* Fallback Routes */}
