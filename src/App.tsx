@@ -3,19 +3,34 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { FileProvider } from "@/contexts/FileContext";
 
+// Layouts
+import SidebarLayout from "@/components/layouts/SidebarLayout";
+
+// Public Pages
 import Navbar from "@/components/Navbar";
 import Index from "@/pages/Index";
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
-import Dashboard from "@/pages/Dashboard";
-import FileView from "@/pages/FileView";
 import HowItWorks from "@/pages/HowItWorks";
+import FileView from "@/pages/FileView";
+
+// Admin Pages
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import ShareFiles from "@/pages/admin/ShareFiles";
+import SharedFiles from "@/pages/admin/SharedFiles";
+import AccountSettings from "@/pages/admin/AccountSettings";
+import UsersManagement from "@/pages/admin/UsersManagement";
 
 const queryClient = new QueryClient();
+
+// Protected route wrapper
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  return <SidebarLayout>{children}</SidebarLayout>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -24,17 +39,70 @@ const App = () => (
         <FileProvider>
           <BrowserRouter>
             <div className="min-h-screen bg-oxxfile-dark flex flex-col">
-              <Navbar />
-              <div className="flex-1">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/file/:id" element={<FileView />} />
-                  <Route path="/how-it-works" element={<HowItWorks />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </div>
+              <Routes>
+                {/* Public Routes */}
+                <Route 
+                  path="/" 
+                  element={
+                    <>
+                      <Navbar />
+                      <Index />
+                    </>
+                  } 
+                />
+                <Route 
+                  path="/login" 
+                  element={
+                    <>
+                      <Navbar />
+                      <Login />
+                    </>
+                  } 
+                />
+                <Route 
+                  path="/file/:id" 
+                  element={
+                    <>
+                      <Navbar />
+                      <FileView />
+                    </>
+                  } 
+                />
+                <Route 
+                  path="/how-it-works" 
+                  element={
+                    <>
+                      <Navbar />
+                      <HowItWorks />
+                    </>
+                  } 
+                />
+
+                {/* Admin/Protected Routes */}
+                <Route
+                  path="/dashboard"
+                  element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>}
+                />
+                <Route
+                  path="/share"
+                  element={<ProtectedRoute><ShareFiles /></ProtectedRoute>}
+                />
+                <Route
+                  path="/shared-files"
+                  element={<ProtectedRoute><SharedFiles /></ProtectedRoute>}
+                />
+                <Route
+                  path="/account-settings"
+                  element={<ProtectedRoute><AccountSettings /></ProtectedRoute>}
+                />
+                <Route
+                  path="/users"
+                  element={<ProtectedRoute><UsersManagement /></ProtectedRoute>}
+                />
+
+                {/* Fallback Routes */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
             </div>
             <Toaster />
             <Sonner />

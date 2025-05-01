@@ -52,28 +52,43 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Function to extract file ID from Google Drive URL
   const extractGoogleDriveFileId = (url: string): string | null => {
+    console.log("Extracting ID from URL:", url);
+    
     // Pattern for format: https://drive.google.com/file/d/{fileId}/view
     const filePattern = /\/file\/d\/([^\/]+)(?:\/|$)/;
     // Pattern for format: https://drive.google.com/open?id={fileId}
     const openPattern = /[?&]id=([^&]+)/;
     // Pattern for format: https://drive.google.com/uc?id={fileId}
     const ucPattern = /\/uc\?(?:.+&)?id=([^&]+)/;
+    // Pattern for shared drive: https://drive.google.com/drive/folders/{folderId}/...
+    const folderPattern = /\/drive\/folders\/([^\/]+)(?:\/|$)/;
     
+    // Try each pattern in sequence
     let match = url.match(filePattern);
     if (match && match[1]) {
+      console.log("Matched file pattern:", match[1]);
       return match[1];
     }
     
     match = url.match(openPattern);
     if (match && match[1]) {
+      console.log("Matched open pattern:", match[1]);
       return match[1];
     }
     
     match = url.match(ucPattern);
     if (match && match[1]) {
+      console.log("Matched uc pattern:", match[1]);
       return match[1];
     }
     
+    match = url.match(folderPattern);
+    if (match && match[1]) {
+      console.log("Matched folder pattern:", match[1]);
+      return match[1];
+    }
+    
+    console.log("No pattern matched for URL");
     return null;
   };
 
@@ -115,16 +130,22 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Function to fetch file details from Google Drive API
   const fetchFileDetails = async (fileId: string): Promise<any> => {
     try {
-      const response = await fetch(
-        `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,mimeType,size,createdTime,fileExtension&supportsAllDrives=true&includeItemsFromAllDrives=true&key=${API_KEY}`
-      );
+      console.log("Fetching details for file:", fileId);
+      const url = `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,mimeType,size,createdTime,fileExtension&supportsAllDrives=true&includeItemsFromAllDrives=true&key=${API_KEY}`;
+      console.log("Request URL:", url);
+      
+      const response = await fetch(url);
+      console.log("Response status:", response.status);
       
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("API error:", errorData);
         throw new Error(errorData.error?.message || 'Error fetching file details');
       }
       
-      return await response.json();
+      const data = await response.json();
+      console.log("Fetched file details:", data);
+      return data;
     } catch (error) {
       console.error('Error fetching from Google Drive API:', error);
       throw error;
@@ -151,7 +172,7 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error("Could not extract Google Drive file ID");
       }
 
-      // Fetch file details from Google API
+      // Fetch file details from Google API with support for shared drives
       const fileDetails = await fetchFileDetails(fileId);
       console.log("API returned file details:", fileDetails);
       
@@ -171,7 +192,7 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
         type: fileType,
         mimeType,
         createdAt: fileDetails.createdTime || new Date().toISOString(),
-        downloadUrl: `https://drive.google.com/uc?export=download&id=${fileId}`,
+        downloadUrl: `https://drive.google.com/uc?export=download&id=${fileId}&supportsAllDrives=true&includeItemsFromAllDrives=true`,
         shareLink: `/file/${randomId}`,
         sharedBy: "LDRIVE",
         security: "End-to-end encrypted",
