@@ -36,7 +36,7 @@ export const DEFAULT_MIRRORS: Mirror[] = [
   {
     id: 'gdflix',
     name: 'GDFlix Download',
-    baseUrl: 'https://new6.gdflix.dad/file/',
+    baseUrl: 'https://new6.gdflix.dad/v2/share',
     currentDomain: 'https://new6.gdflix.dad/',
     apiKey: '54fbce203feecf6e90ba3d3750254c39',
     isEnabled: true,
@@ -105,7 +105,7 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
         return {
           mirrorId: mirror.id,
           fileId,
-          downloadUrl: `${mirror.baseUrl}${fileId}`,
+          downloadUrl: ${mirror.baseUrl}${fileId},
           status: 'success'
         };
         
@@ -127,9 +127,9 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
         
         while (retries > 0 && !gdflixResponse) {
           try {
-            console.log(`GDflix API attempt ${mirror.retryCount! - retries + 1} for file ${fileId}`);
-            const apiUrl = `${mirror.currentDomain}v2/share?id=${fileId}&key=${mirror.apiKey}`;
-            console.log(`Calling GDflix API: ${apiUrl}`);
+            console.log(GDflix API attempt ${mirror.retryCount! - retries + 1} for file ${fileId});
+            const apiUrl = ${mirror.currentDomain}v2/share?id=${fileId}&key=${mirror.apiKey};
+            console.log(Calling GDflix API: ${apiUrl});
             
             const res = await fetch(apiUrl);
             const data = await res.json();
@@ -137,8 +137,8 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
             
             // If we got a key, we're successful
             if (data && data.key) {
-              const downloadUrl = `${mirror.currentDomain}file/${data.key}`;
-              console.log(`GDflix mirror created successfully: ${downloadUrl}`);
+              const downloadUrl = ${mirror.currentDomain}file/${data.key};
+              console.log(GDflix mirror created successfully: ${downloadUrl});
               
               return {
                 mirrorId: mirror.id,
@@ -155,13 +155,13 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
             
             gdflixResponse = data;
           } catch (err) {
-            console.error(`GDflix API attempt failed, retries left: ${retries - 1}, err`);
+            console.error(GDflix API attempt failed, retries left: ${retries - 1}, err);
             retries--;
             
             if (retries > 0) {
               // Wait for retry delay before next attempt
               const delay = (mirror.retryDelay || 5) * 1000;
-              console.log(`Waiting ${delay}ms before retrying...`);
+              console.log(Waiting ${delay}ms before retrying...);
               await new Promise(resolve => setTimeout(resolve, delay));
             }
           }
@@ -189,7 +189,7 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
       case 'pixeldrain':
         // Implementation for Pixeldrain API
         try {
-          console.log(`Initiating Pixeldrain processing for file ID: ${fileId}`);
+          console.log(Initiating Pixeldrain processing for file ID: ${fileId});
           
           // In a real implementation, you would make an API call to Pixeldrain
           // This would involve uploading the file to Pixeldrain, which can be done by:
@@ -198,7 +198,7 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
           
           // For now, we'll simulate the process with a placeholder
           // In production, you would implement proper upload logic here
-          const pixeldrainUrl = `https://pixeldrain.com/api/file/${fileId}`;
+          const pixeldrainUrl = https://pixeldrain.com/api/file/${fileId};
           
           // Return a processing status initially
           return {
@@ -228,11 +228,11 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
           fileId,
           downloadUrl: '',
           status: 'failed',
-          message: `Unknown mirror type: ${mirror.id}`
+          message: Unknown mirror type: ${mirror.id}
         };
     }
   } catch (error) {
-    console.error(`Error regenerating mirror URL for ${mirror.id}:`, error);
+    console.error(Error regenerating mirror URL for ${mirror.id}:, error);
     return {
       mirrorId: mirror.id,
       fileId,
