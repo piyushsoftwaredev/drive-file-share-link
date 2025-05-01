@@ -26,6 +26,7 @@ import AccountSettings from "@/pages/admin/AccountSettings";
 import UsersManagement from "@/pages/admin/UsersManagement";
 import ImportExport from "@/pages/admin/ImportExport";
 import MirrorOptions from "@/pages/admin/MirrorOptions";
+import FileQueue from "@/pages/admin/FileQueue";
 
 const queryClient = new QueryClient();
 
@@ -109,6 +110,10 @@ const App = () => {
                   <Route
                     path="/mirror-options"
                     element={<ProtectedRoute><MirrorOptions /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/file-queue"
+                    element={<ProtectedRoute><FileQueue /></ProtectedRoute>}
                   />
 
                   {/* Fallback Routes */}

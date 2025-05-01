@@ -89,12 +89,14 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
     <div className="rounded-lg overflow-hidden bg-[#14121d] bg-opacity-80 border border-[#2a2440] backdrop-blur-sm shadow-xl">
       {/* File name header in gradient container */}
       <div className="bg-gradient-to-r from-[#1e1736] to-[#281e4a] p-4 rounded-t-lg">
-        <div className="flex items-center gap-4">
+        <div className="flex items-start gap-4">
           <div className="flex-shrink-0">
             <FileIcon type={fileExtension} size="lg" />
           </div>
-          <div className="flex-grow">
-            <h1 className="text-xl md:text-2xl font-bold text-[#9b87f5] truncate">{file.name}</h1>
+          <div className="flex-grow overflow-hidden">
+            <h1 className="text-xl md:text-2xl font-bold text-[#9b87f5] break-words">
+              {file.name}
+            </h1>
             <div className="flex flex-wrap items-center gap-3 mt-1">
               <span className="text-white font-medium">{file.size}</span>
               <div className="flex items-center gap-1 text-gray-400">
@@ -116,7 +118,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
                 <span>Full Name</span>
               </div>
             </div>
-            <div className="text-right text-white truncate">
+            <div className="text-right text-white break-words">
               {file.name}
             </div>
 
@@ -202,8 +204,8 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
 
           {file.isProcessing ? (
             <div className="bg-[#1a1725]/50 border-[#2a2440] p-8 rounded-md text-center">
-              <div className="animate-spin mx-auto mb-4">
-                <RefreshCw className="h-8 w-8 text-[#9b87f5]" />
+              <div className="flex justify-center mb-4">
+                <RefreshCw className="h-8 w-8 text-[#9b87f5] animate-spin" />
               </div>
               <p className="text-white">Processing your file...</p>
               <p className="text-gray-400 text-sm mt-2">This may take a few moments depending on file size</p>

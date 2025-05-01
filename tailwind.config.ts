@@ -64,9 +64,13 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				oxxfile: {
-					dark: '#0f0a19',
+					dark: '#0a0812', // Even darker background
+					'dark-secondary': '#14121d', // Dark secondary background
+					'dark-card': '#1a1725', // Dark cards
+					'dark-border': '#2a2440', // Dark borders
 					purple: '#9b87f5',
 					'purple-light': '#d6bcfa',
+					'purple-dark': '#7c5ce0',
 					blue: '#4285f4'
 				}
 			},
@@ -101,16 +105,26 @@ export default {
 						backgroundPosition: '100% 50%',
 						opacity: '1'
 					}
+				},
+				'spin-small': {
+					'0%': { 
+						transform: 'rotate(0deg)'
+					},
+					'100%': { 
+						transform: 'rotate(360deg)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'gradient-pulse': 'gradient-pulse 8s ease infinite'
+				'gradient-pulse': 'gradient-pulse 8s ease infinite',
+				'spin-small': 'spin-small 1.5s linear infinite' // Added for more controlled spinner
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'purple-glow': 'linear-gradient(135deg, rgba(155, 135, 245, 0.3) 0%, rgba(155, 135, 245, 0.1) 100%)',
+				'dark-gradient': 'linear-gradient(180deg, #0a0812 0%, #14121d 100%)'
 			}
 		}
 	},

@@ -46,35 +46,35 @@
   }
 
   .dark {
-    --background: 256 47% 7%;
+    --background: 256 47% 4%;
     --foreground: 210 40% 98%;
 
-    --card: 256 47% 7%;
+    --card: 256 47% 6%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 256 47% 7%;
+    --popover: 256 47% 5%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 262 83% 74%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 260 19% 18%;
+    --secondary: 260 19% 15%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 260 19% 18%;
+    --muted: 260 19% 15%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 260 19% 18%;
+    --accent: 260 19% 15%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 260 19% 18%;
-    --input: 260 19% 18%;
+    --border: 260 19% 15%;
+    --input: 260 19% 15%;
     --ring: 262 83% 74%;
     
-    --sidebar-background: 262 83% 20%;
+    --sidebar-background: 262 83% 15%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 262 83% 74%;
     --sidebar-primary-foreground: 0 0% 100%;
@@ -94,3 +94,35 @@
     @apply bg-oxxfile-dark text-foreground;
   }
 }
+
+/* Custom spinner style with smaller radius */
+.spinner-small {
+  @apply animate-spin-small text-oxxfile-purple;
+  transform-origin: center center;
+}
+
+/* Improved hover styles for buttons */
+.hover-white {
+  @apply hover:text-white transition-colors;
+}
+
+/* Break long text in appropriate places */
+.break-words {
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Darker theme for admin/backend pages */
+.admin-layout {
+  @apply bg-oxxfile-dark text-white;
+}
+
+.admin-card {
+  @apply bg-oxxfile-dark-card border-oxxfile-dark-border;
+}
+
+/* Make backend-specific text always white */
+.admin-text {
+  @apply text-white;
+}
+

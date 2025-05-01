@@ -111,7 +111,7 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
         };
         
       case 'gdflix':
-        // Generate GDflix mirror
+        // Generate GDflix mirror using their API
         if (!mirror.apiKey || !mirror.currentDomain) {
           return {
             mirrorId: mirror.id,
@@ -122,46 +122,54 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
           };
         }
         
-        // Implementation of GDflix API call with retry logic
+        // Implementation of GDflix API call with retry logic as per docs
         let retries = mirror.retryCount || 5;
-        let response = null;
+        let gdflixResponse = null;
         
-        while (retries > 0 && !response) {
+        while (retries > 0 && !gdflixResponse) {
           try {
+            console.log(`GDflix API attempt ${mirror.retryCount! - retries + 1} for file ${fileId}`);
             const apiUrl = `${mirror.currentDomain}v2/share?id=${fileId}&key=${mirror.apiKey}`;
-            console.log(`Attempting GDflix API call: ${apiUrl}`);
+            console.log(`Calling GDflix API: ${apiUrl}`);
             
             const res = await fetch(apiUrl);
-            const data: GDflixResponse = await res.json();
+            const data = await res.json();
+            console.log("GDflix API response:", data);
             
-            if (data.key) {
+            // If we got a key, we're successful
+            if (data && data.key) {
+              const downloadUrl = `${mirror.currentDomain}file/${data.key}`;
+              console.log(`GDflix mirror created successfully: ${downloadUrl}`);
+              
               return {
                 mirrorId: mirror.id,
                 fileId,
-                downloadUrl: `${mirror.currentDomain}file/${data.key}`,
+                downloadUrl,
                 status: 'success'
               };
             }
             
-            console.log("GDflix API response:", data);
+            // If there's an error, throw it
             if (data.error) {
               throw new Error(data.message || 'Unknown GDflix error');
             }
             
-            response = data;
+            gdflixResponse = data;
           } catch (err) {
-            console.error(`GDflix API attempt failed, retries left: ${retries}`, err);
+            console.error(`GDflix API attempt failed, retries left: ${retries - 1}`, err);
             retries--;
             
             if (retries > 0) {
               // Wait for retry delay before next attempt
-              await new Promise(resolve => setTimeout(resolve, (mirror.retryDelay || 5) * 1000));
+              const delay = (mirror.retryDelay || 5) * 1000;
+              console.log(`Waiting ${delay}ms before retrying...`);
+              await new Promise(resolve => setTimeout(resolve, delay));
             }
           }
         }
         
         // If we've exhausted retries
-        if (!response) {
+        if (!gdflixResponse) {
           return {
             mirrorId: mirror.id,
             fileId,
@@ -180,31 +188,38 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
         };
         
       case 'pixeldrain':
-        // This would typically involve an API call to upload to pixeldrain
-        // For now, we'll simulate the response
+        // Implementation for Pixeldrain API
         try {
-          // Example API endpoint - in production, this would be a proper file upload endpoint
-          console.log(`Initiating Pixeldrain upload for file ID: ${fileId}`);
+          console.log(`Initiating Pixeldrain processing for file ID: ${fileId}`);
           
-          // In a real implementation, you would stream the download from Google Drive
-          // directly to Pixeldrain using their API, without storing on your server
+          // In a real implementation, you would make an API call to Pixeldrain
+          // This would involve uploading the file to Pixeldrain, which can be done by:
+          // 1. Using their API to create a direct upload URL
+          // 2. Streaming the Google Drive download to Pixeldrain without storing on server
           
-          // Simulate an async process
+          // For now, we'll simulate the process with a placeholder
+          // In production, you would implement proper upload logic here
+          const pixeldrainUrl = `https://pixeldrain.com/api/file/${fileId}`;
+          
+          // Return a processing status initially
           return {
             mirrorId: mirror.id,
             fileId,
-            downloadUrl: '', // Empty while processing
+            downloadUrl: '',
             status: 'processing',
             message: 'File is being processed on Pixeldrain'
           };
+          
+          // In a real implementation, you might use a webhook or background job
+          // to update the status once the upload is complete
         } catch (error) {
-          console.error('Pixeldrain upload failed:', error);
+          console.error('Pixeldrain processing failed:', error);
           return {
             mirrorId: mirror.id,
             fileId,
             downloadUrl: '',
             status: 'failed',
-            message: 'Failed to upload to Pixeldrain'
+            message: 'Failed to process with Pixeldrain'
           };
         }
         
