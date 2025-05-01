@@ -34,93 +34,95 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <SidebarLayout>{children}</SidebarLayout>;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <FileProvider>
           <BrowserRouter>
-            <div className="min-h-screen bg-oxxfile-dark flex flex-col">
-              <Routes>
-                {/* Public Routes */}
-                <Route 
-                  path="/" 
-                  element={
-                    <>
-                      <Navbar />
-                      <Index />
-                    </>
-                  } 
-                />
-                <Route 
-                  path="/login" 
-                  element={
-                    <>
-                      <Navbar />
-                      <Login />
-                    </>
-                  } 
-                />
-                <Route 
-                  path="/file/:id" 
-                  element={
-                    <>
-                      <Navbar />
-                      <FileView />
-                    </>
-                  } 
-                />
-                <Route 
-                  path="/how-it-works" 
-                  element={
-                    <>
-                      <Navbar />
-                      <HowItWorks />
-                    </>
-                  } 
-                />
+            <TooltipProvider>
+              <div className="min-h-screen bg-oxxfile-dark flex flex-col">
+                <Routes>
+                  {/* Public Routes */}
+                  <Route 
+                    path="/" 
+                    element={
+                      <>
+                        <Navbar />
+                        <Index />
+                      </>
+                    } 
+                  />
+                  <Route 
+                    path="/login" 
+                    element={
+                      <>
+                        <Navbar />
+                        <Login />
+                      </>
+                    } 
+                  />
+                  <Route 
+                    path="/file/:id" 
+                    element={
+                      <>
+                        <Navbar />
+                        <FileView />
+                      </>
+                    } 
+                  />
+                  <Route 
+                    path="/how-it-works" 
+                    element={
+                      <>
+                        <Navbar />
+                        <HowItWorks />
+                      </>
+                    } 
+                  />
 
-                {/* Admin/Protected Routes */}
-                <Route
-                  path="/dashboard"
-                  element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>}
-                />
-                <Route
-                  path="/share"
-                  element={<ProtectedRoute><ShareFiles /></ProtectedRoute>}
-                />
-                <Route
-                  path="/shared-files"
-                  element={<ProtectedRoute><SharedFiles /></ProtectedRoute>}
-                />
-                <Route
-                  path="/account-settings"
-                  element={<ProtectedRoute><AccountSettings /></ProtectedRoute>}
-                />
-                <Route
-                  path="/users"
-                  element={<ProtectedRoute><UsersManagement /></ProtectedRoute>}
-                />
-                <Route
-                  path="/import-export"
-                  element={<ProtectedRoute><ImportExport /></ProtectedRoute>}
-                />
-                <Route
-                  path="/mirror-options"
-                  element={<ProtectedRoute><MirrorOptions /></ProtectedRoute>}
-                />
+                  {/* Admin/Protected Routes */}
+                  <Route
+                    path="/dashboard"
+                    element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/share"
+                    element={<ProtectedRoute><ShareFiles /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/shared-files"
+                    element={<ProtectedRoute><SharedFiles /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/account-settings"
+                    element={<ProtectedRoute><AccountSettings /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/users"
+                    element={<ProtectedRoute><UsersManagement /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/import-export"
+                    element={<ProtectedRoute><ImportExport /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/mirror-options"
+                    element={<ProtectedRoute><MirrorOptions /></ProtectedRoute>}
+                  />
 
-                {/* Fallback Routes */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </div>
-            <Toaster />
-            <Sonner />
+                  {/* Fallback Routes */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </div>
+              <Toaster />
+              <Sonner />
+            </TooltipProvider>
           </BrowserRouter>
         </FileProvider>
       </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+};
 
 export default App;
