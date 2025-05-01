@@ -91,11 +91,26 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'gradient-pulse': {
+					'0%, 100%': { 
+						backgroundPosition: '0% 50%',
+						opacity: '0.8'
+					},
+					'50%': { 
+						backgroundPosition: '100% 50%',
+						opacity: '1'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'gradient-pulse': 'gradient-pulse 8s ease infinite'
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'purple-glow': 'linear-gradient(135deg, rgba(155, 135, 245, 0.3) 0%, rgba(155, 135, 245, 0.1) 100%)',
 			}
 		}
 	},

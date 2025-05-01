@@ -1,5 +1,15 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  Mirror, 
+  MirrorResponse, 
+  regenerateMirrorUrl,
+  DEFAULT_MIRRORS 
+} from '@/models/MirrorConfig';
+
+interface MirrorStatus {
+  [key: string]: MirrorResponse;
+}
 
 interface FileMetadata {
   id: string;
@@ -16,12 +26,16 @@ interface FileMetadata {
   accessibility: string;
   connection: string;
   originalUrl: string;
+  googleDriveId: string;
+  mirrors: MirrorStatus;
+  isProcessing: boolean;
 }
 
 interface FileContextType {
   files: FileMetadata[];
   addFile: (driveUrl: string) => Promise<FileMetadata>;
   getFileById: (id: string) => FileMetadata | undefined;
+  updateFileMirrors: (fileId: string) => Promise<void>;
   isLoading: boolean;
   error: string | null;
 }
@@ -152,6 +166,96 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Function to process mirror generation in the background
+  const processMirrors = async (fileId: string, googleDriveId: string, originalUrl: string) => {
+    console.log(`Starting mirror processing for file: ${fileId}`);
+    
+    // Get active mirrors from configuration
+    const activeMirrors = DEFAULT_MIRRORS.filter(m => m.isEnabled);
+    
+    // Update file to show it's processing
+    setFiles(prevFiles => {
+      const updatedFiles = prevFiles.map(file => {
+        if (file.id === fileId) {
+          return { ...file, isProcessing: true };
+        }
+        return file;
+      });
+      localStorage.setItem('files', JSON.stringify(updatedFiles));
+      return updatedFiles;
+    });
+    
+    // Process each mirror in parallel
+    const mirrorPromises = activeMirrors.map(async (mirror) => {
+      try {
+        console.log(`Generating mirror for ${mirror.id}`);
+        const mirrorResponse = await regenerateMirrorUrl(mirror, googleDriveId, originalUrl);
+        
+        // Update file with mirror status
+        setFiles(prevFiles => {
+          const updatedFiles = prevFiles.map(file => {
+            if (file.id === fileId) {
+              const updatedMirrors = {
+                ...file.mirrors,
+                [mirror.id]: mirrorResponse
+              };
+              return { 
+                ...file, 
+                mirrors: updatedMirrors,
+                isProcessing: Object.values(updatedMirrors).some(m => m.status === 'processing')
+              };
+            }
+            return file;
+          });
+          localStorage.setItem('files', JSON.stringify(updatedFiles));
+          return updatedFiles;
+        });
+        
+        return mirrorResponse;
+      } catch (error) {
+        console.error(`Error generating mirror for ${mirror.id}:`, error);
+        return {
+          mirrorId: mirror.id,
+          fileId: googleDriveId,
+          downloadUrl: '',
+          status: 'failed' as const,
+          message: error instanceof Error ? error.message : 'Unknown error'
+        };
+      }
+    });
+    
+    // Wait for all mirror generations to complete
+    await Promise.all(mirrorPromises);
+    
+    // Final update to ensure isProcessing is correctly set
+    setFiles(prevFiles => {
+      const updatedFiles = prevFiles.map(file => {
+        if (file.id === fileId) {
+          const isStillProcessing = Object.values(file.mirrors).some(m => m.status === 'processing');
+          return { 
+            ...file, 
+            isProcessing: isStillProcessing
+          };
+        }
+        return file;
+      });
+      localStorage.setItem('files', JSON.stringify(updatedFiles));
+      return updatedFiles;
+    });
+    
+    console.log(`Completed mirror processing for file: ${fileId}`);
+  };
+
+  // Function to update mirrors for a specific file
+  const updateFileMirrors = async (fileId: string) => {
+    const file = files.find(f => f.id === fileId);
+    if (!file) {
+      throw new Error('File not found');
+    }
+    
+    await processMirrors(fileId, file.googleDriveId, file.originalUrl);
+  };
+
   // Extract file info from Google Drive URL
   const extractFileInfo = async (driveUrl: string): Promise<FileMetadata> => {
     setIsLoading(true);
@@ -165,15 +269,15 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
         Math.floor(Math.random() * 36).toString(36)).join('');
       
       // Extract Google Drive file ID
-      const fileId = extractGoogleDriveFileId(driveUrl);
-      console.log("Extracted file ID:", fileId);
+      const googleDriveId = extractGoogleDriveFileId(driveUrl);
+      console.log("Extracted file ID:", googleDriveId);
       
-      if (!fileId) {
+      if (!googleDriveId) {
         throw new Error("Could not extract Google Drive file ID");
       }
 
       // Fetch file details from Google API with support for shared drives
-      const fileDetails = await fetchFileDetails(fileId);
+      const fileDetails = await fetchFileDetails(googleDriveId);
       console.log("API returned file details:", fileDetails);
       
       // Process file details
@@ -192,13 +296,16 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
         type: fileType,
         mimeType,
         createdAt: fileDetails.createdTime || new Date().toISOString(),
-        downloadUrl: `https://drive.google.com/uc?export=download&id=${fileId}&supportsAllDrives=true&includeItemsFromAllDrives=true`,
+        downloadUrl: `https://drive.google.com/uc?export=download&id=${googleDriveId}&supportsAllDrives=true&includeItemsFromAllDrives=true`,
         shareLink: `/file/${randomId}`,
         sharedBy: "LDRIVE",
         security: "End-to-end encrypted",
         accessibility: "Public",
         connection: "Fast",
-        originalUrl: driveUrl
+        originalUrl: driveUrl,
+        googleDriveId,
+        mirrors: {},
+        isProcessing: true
       };
 
       console.log("Created file metadata:", newFile);
@@ -209,6 +316,9 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('files', JSON.stringify(updatedFiles));
         return updatedFiles;
       });
+      
+      // Start mirror processing in the background
+      processMirrors(randomId, googleDriveId, driveUrl);
       
       setIsLoading(false);
       return newFile;
@@ -231,6 +341,7 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
         files, 
         addFile: extractFileInfo, 
         getFileById,
+        updateFileMirrors,
         isLoading,
         error
       }}

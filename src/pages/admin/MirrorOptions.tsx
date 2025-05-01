@@ -5,12 +5,14 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { RefreshCw, ArrowDown } from 'lucide-react';
+import { RefreshCw, ArrowDown, Settings2, Database } from 'lucide-react';
 import { toast } from 'sonner';
-import { Mirror, DEFAULT_MIRRORS } from '@/models/MirrorConfig';
+import { Mirror, DEFAULT_MIRRORS, DEFAULT_CONFIG } from '@/models/MirrorConfig';
 
 const MirrorOptions = () => {
   const [mirrors, setMirrors] = useState<Mirror[]>(DEFAULT_MIRRORS);
+  const [maxParallelDownloads, setMaxParallelDownloads] = useState(DEFAULT_CONFIG.maxParallelDownloads);
+  const [bandwidthUsage, setBandwidthUsage] = useState(50);
 
   const handleToggleMirror = (id: string) => {
     setMirrors(prev => 
@@ -29,6 +31,38 @@ const MirrorOptions = () => {
     );
   };
 
+  const handleApiKeyChange = (id: string, apiKey: string) => {
+    setMirrors(prev => 
+      prev.map(mirror => 
+        mirror.id === id ? { ...mirror, apiKey } : mirror
+      )
+    );
+  };
+
+  const handleDomainChange = (id: string, domain: string) => {
+    setMirrors(prev => 
+      prev.map(mirror => 
+        mirror.id === id ? { ...mirror, currentDomain: domain } : mirror
+      )
+    );
+  };
+
+  const handleRetryCountChange = (id: string, count: number) => {
+    setMirrors(prev => 
+      prev.map(mirror => 
+        mirror.id === id ? { ...mirror, retryCount: count } : mirror
+      )
+    );
+  };
+
+  const handleRetryDelayChange = (id: string, delay: number) => {
+    setMirrors(prev => 
+      prev.map(mirror => 
+        mirror.id === id ? { ...mirror, retryDelay: delay } : mirror
+      )
+    );
+  };
+
   const handleRegenerateMirror = (id: string) => {
     // Logic to regenerate mirror would go here
     setMirrors(prev => 
@@ -37,6 +71,11 @@ const MirrorOptions = () => {
       )
     );
     toast.success(`Mirror ${id} regenerated`);
+  };
+
+  const handleSaveSettings = () => {
+    // In a real app, this would save to localStorage or a backend API
+    toast.success("Global mirror settings saved");
   };
 
   return (
@@ -64,10 +103,62 @@ const MirrorOptions = () => {
                 <Label className="text-white">Base URL</Label>
                 <Input
                   value={mirror.baseUrl}
-                  readOnly
+                  onChange={(e) => setMirrors(prev => 
+                    prev.map(m => 
+                      m.id === mirror.id ? { ...m, baseUrl: e.target.value } : m
+                    )
+                  )}
                   className="bg-gray-800 border-gray-700 text-white"
                 />
               </div>
+              
+              {mirror.id === 'gdflix' && (
+                <>
+                  <div>
+                    <Label className="text-white">Current Domain</Label>
+                    <Input
+                      value={mirror.currentDomain || ''}
+                      onChange={(e) => handleDomainChange(mirror.id, e.target.value)}
+                      className="bg-gray-800 border-gray-700 text-white"
+                      placeholder="https://new6.gdflix.dad/"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label className="text-white">API Key</Label>
+                    <Input
+                      value={mirror.apiKey || ''}
+                      onChange={(e) => handleApiKeyChange(mirror.id, e.target.value)}
+                      className="bg-gray-800 border-gray-700 text-white"
+                      placeholder="Enter API key"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-white">Retry Count</Label>
+                      <Input
+                        type="number"
+                        value={mirror.retryCount || 5}
+                        onChange={(e) => handleRetryCountChange(mirror.id, parseInt(e.target.value))}
+                        className="bg-gray-800 border-gray-700 text-white"
+                        min="1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label className="text-white">Retry Delay (seconds)</Label>
+                      <Input
+                        type="number"
+                        value={mirror.retryDelay || 5}
+                        onChange={(e) => handleRetryDelayChange(mirror.id, parseInt(e.target.value))}
+                        className="bg-gray-800 border-gray-700 text-white"
+                        min="1"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
               
               <div>
                 <Label className="text-white">Regeneration Period (hours)</Label>
@@ -122,7 +213,8 @@ const MirrorOptions = () => {
             <Label className="text-white">Maximum Parallel Downloads</Label>
             <Input
               type="number"
-              defaultValue="3"
+              value={maxParallelDownloads}
+              onChange={(e) => setMaxParallelDownloads(parseInt(e.target.value))}
               className="bg-gray-800 border-gray-700 text-white w-24"
               min="1"
             />
@@ -135,7 +227,8 @@ const MirrorOptions = () => {
             <Label className="text-white">Bandwidth Usage (%)</Label>
             <Input
               type="number"
-              defaultValue="50"
+              value={bandwidthUsage}
+              onChange={(e) => setBandwidthUsage(parseInt(e.target.value))}
               className="bg-gray-800 border-gray-700 text-white w-24"
               min="1"
               max="100"
@@ -145,8 +238,67 @@ const MirrorOptions = () => {
             </p>
           </div>
           
-          <Button className="bg-oxxfile-purple hover:bg-oxxfile-purple/90 mt-4">
+          <Button 
+            className="bg-oxxfile-purple hover:bg-oxxfile-purple/90 mt-4"
+            onClick={handleSaveSettings}
+          >
             Save Global Settings
+          </Button>
+        </CardContent>
+      </Card>
+      
+      <Card className="bg-gray-900/60 border-gray-800">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center">
+            <Database className="mr-2 h-5 w-5" />
+            Backend Performance Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="text-white">Worker Threads</Label>
+            <Input
+              type="number"
+              defaultValue="4"
+              className="bg-gray-800 border-gray-700 text-white w-24"
+              min="1"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Number of simultaneous background processes for file operations
+            </p>
+          </div>
+          
+          <div>
+            <Label className="text-white">Processing Queue Size</Label>
+            <Input
+              type="number"
+              defaultValue="100"
+              className="bg-gray-800 border-gray-700 text-white w-24"
+              min="1"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Maximum number of files in the processing queue
+            </p>
+          </div>
+          
+          <div>
+            <Label className="text-white">Processing Priority</Label>
+            <select className="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2 mt-1">
+              <option value="normal">Normal</option>
+              <option value="high">High</option>
+              <option value="low">Low</option>
+            </select>
+            <p className="text-xs text-gray-400 mt-1">
+              Control how system resources are allocated to file processing
+            </p>
+          </div>
+          
+          <Button 
+            className="bg-oxxfile-purple hover:bg-oxxfile-purple/90 flex items-center mt-4"
+            onClick={() => toast.success("Backend performance settings saved")}
+          >
+            <Settings2 className="mr-2 h-4 w-4" />
+            Save Performance Settings
           </Button>
         </CardContent>
       </Card>

@@ -36,10 +36,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <FileProvider>
-          <BrowserRouter>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <FileProvider>
             <TooltipProvider>
               <div className="min-h-screen bg-oxxfile-dark flex flex-col">
                 <Routes>
@@ -118,10 +118,10 @@ const App = () => {
               <Toaster />
               <Sonner />
             </TooltipProvider>
-          </BrowserRouter>
-        </FileProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+          </FileProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 };
 
