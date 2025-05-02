@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { useFiles } from '@/contexts/FileContext';
 import FileIcon from './FileIcon';
 import { Button } from '@/components/ui/button';
@@ -25,8 +26,6 @@ interface FileDetailsProps {
 
 const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
   const { getFileById, updateFileMirrors } = useFiles();
-  const [isGeneratingGdflix, setIsGeneratingGdflix] = useState(false);
-  const [isGeneratingPixeldrain, setIsGeneratingPixeldrain] = useState(false);
   const file = getFileById(fileId);
 
   if (!file) {
@@ -65,65 +64,26 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
       toast.error("Download link is not available yet.");
       return;
     }
-    
-    // Open the link in a new tab
     window.open(mirror.downloadUrl, '_blank');
-    
-    // Show different toast message based on mirror type
-    if (mirrorId === 'gdflix') {
-      toast.info("Redirecting to GDflix...");
-    } else if (mirrorId === 'pixeldrain') {
-      toast.info("Redirecting to Pixeldrain...");
-    } else {
-      toast.info("Download initiated. This may take a moment.");
-    }
+    toast.info("Download initiated. This may take a moment.");
   };
 
-  // Function to specifically generate GDflix mirror
-  const generateGdflixMirror = async () => {
-    if (isGeneratingGdflix) return;
-
-    setIsGeneratingGdflix(true);
-    toast.info("Generating GDflix mirror...");
-
+  const handleRegenerateMirrors = async () => {
+    toast.info("Regenerating mirrors. This may take a moment.");
     try {
-      // Pass a flag to only generate gdflix mirror
-      await updateFileMirrors(fileId, { onlyGdflix: true });
-      toast.success("GDflix mirror generated successfully");
+      await updateFileMirrors(fileId);
+      toast.success("Mirror regeneration initiated.");
     } catch (error) {
-      toast.error("Failed to generate GDflix mirror");
-    } finally {
-      setIsGeneratingGdflix(false);
-    }
-  };
-
-  // Function to specifically generate Pixeldrain mirror
-  const generatePixeldrainMirror = async () => {
-    if (isGeneratingPixeldrain) return;
-
-    setIsGeneratingPixeldrain(true);
-    toast.info("Generating Pixeldrain mirror...");
-
-    try {
-      // Pass a flag to only generate pixeldrain mirror
-      await updateFileMirrors(fileId, { onlyPixeldrain: true });
-      toast.success("Pixeldrain mirror generated successfully");
-    } catch (error) {
-      toast.error("Failed to generate Pixeldrain mirror");
-    } finally {
-      setIsGeneratingPixeldrain(false);
+      toast.error("Failed to regenerate mirrors.");
     }
   };
 
   const isVideoFile = ['mp4', 'mkv', 'avi', 'mov'].includes(fileExtension.toLowerCase());
 
-  // Check if GDflix mirror is available
-  const hasGdflixMirror = file.mirrors?.gdflix?.status === 'success' && 
-                          file.mirrors?.gdflix?.downloadUrl;
-
-  // Check if Pixeldrain mirror is available
-  const hasPixeldrainMirror = file.mirrors?.pixeldrain?.status === 'success' && 
-                             file.mirrors?.pixeldrain?.downloadUrl;
+  // Check if any mirrors are available (not processing or failed)
+  const hasMirrors = Object.values(file.mirrors || {}).some(
+    mirror => mirror.status === 'success' && mirror.downloadUrl
+  );
 
   return (
     <div className="rounded-lg overflow-hidden bg-[#14121d] bg-opacity-80 border border-[#2a2440] backdrop-blur-sm shadow-xl">
@@ -134,7 +94,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
             <FileIcon type={fileExtension} size="lg" />
           </div>
           <div className="flex-grow overflow-hidden">
-            <h1 className="text-xl md:text-2xl font-bold text-[#9b87f5] truncate">
+            <h1 className="text-xl md:text-2xl font-bold text-[#9b87f5] break-words">
               {file.name}
             </h1>
             <div className="flex flex-wrap items-center gap-3 mt-1">
@@ -228,80 +188,82 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
               <span className="text-xs text-gray-500 bg-[#1a1725] px-3 py-1 rounded-full">
                 {fileExtension}
               </span>
+              <Button 
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] text-white"
+                onClick={handleRegenerateMirrors}
+                disabled={file.isProcessing}
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
             </div>
           </div>
 
           <Separator className="bg-[#2a2440] mb-4" />
 
-          {/* GDflix Section */}
-          <div className="mb-4">
-            
-            
-            {hasGdflixMirror ? (
-              <Button 
-                variant="outline" 
-                className="w-full text-left justify-center bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] py-6 text-white hover:text-white"
-                onClick={() => handleDownloadClick('gdflix')}
-              >
-                <div className="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#f39c12]"><path d="M8 17L12 21L16 17"></path><path d="M12 12V21"></path><path d="M20.88 18.09C22.08 17.08 22.73 15.53 22.73 13.88C22.73 10.64 20.13 8.04 16.89 8.04C16.24 7.04 15.28 6.26 14.12 5.77C12.96 5.28 11.66 5.11 10.4 5.29C9.14 5.47 7.97 6 7.04 6.81C6.1 7.63 5.44 8.69 5.15 9.87C3.87 10.09 2.73 10.84 1.96 11.93C1.19 13.03 0.850122 14.39 0.999783 15.75C1.14944 17.11 1.77932 18.36 2.79133 19.23C3.80334 20.1 5.1162 20.54 6.5 20.5H7.5"></path></svg>
-                  <span className="font-medium">GDflix Mirror</span>
-                  <ExternalLink className="w-4 h-4 ml-2 text-gray-500" />
-                </div>
-              </Button>
-            ) : (
-              <Button 
-                className="w-full bg-[#1a1725]/50 hover:bg-[#241e38]/50 border border-[#2a2440] py-6 text-white flex justify-center"
-                onClick={generateGdflixMirror}
-                disabled={isGeneratingGdflix}
-              >
-                <div className="flex items-center gap-2 justify-center">
-                  {isGeneratingGdflix ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#f39c12]"><path d="M8 17L12 21L16 17"></path><path d="M12 12V21"></path><path d="M20.88 18.09C22.08 17.08 22.73 15.53 22.73 13.88C22.73 10.64 20.13 8.04 16.89 8.04C16.24 7.04 15.28 6.26 14.12 5.77C12.96 5.28 11.66 5.11 10.4 5.29C9.14 5.47 7.97 6 7.04 6.81C6.1 7.63 5.44 8.69 5.15 9.87C3.87 10.09 2.73 10.84 1.96 11.93C1.19 13.03 0.850122 14.39 0.999783 15.75C1.14944 17.11 1.77932 18.36 2.79133 19.23C3.80334 20.1 5.1162 20.54 6.5 20.5H7.5"></path></svg>
-                  )}
-                  <span>{isGeneratingGdflix ? 'Generating GDflix mirror...' : 'Generate GDflix Mirror'}</span>
-                </div>
-              </Button>
-            )}
-          </div>
+          {file.isProcessing ? (
+            <div className="bg-[#1a1725]/50 border-[#2a2440] p-8 rounded-md text-center">
+              <div className="flex justify-center mb-4">
+                <RefreshCw className="h-8 w-8 text-[#9b87f5] animate-spin" />
+              </div>
+              <p className="text-white">Processing your file...</p>
+              <p className="text-gray-400 text-sm mt-2">This may take a few moments depending on file size</p>
+            </div>
+          ) : hasMirrors ? (
+            <div className="flex flex-col gap-3">
+              {Object.entries(file.mirrors || {}).map(([mirrorId, mirror]) => {
+                // Only show mirrors that are ready
+                if (mirror.status !== 'success' || !mirror.downloadUrl) return null;
+                
+                let iconClass = "text-[#3498db]"; // Default color
+                let mirrorName = "Download";
+                
+                // Set icon color and name based on mirror type
+                switch (mirrorId) {
+                  case 'direct':
+                    iconClass = "text-[#3498db]";
+                    mirrorName = "Direct Google Drive";
+                    break;
+                  case 'pixeldrain':
+                    iconClass = "text-[#9b87f5]";
+                    mirrorName = "PixelDrain Download";
+                    break;
+                  case 'gdflix':
+                    iconClass = "text-[#f39c12]";
+                    mirrorName = "GDflix Download";
+                    break;
+                  default:
+                    iconClass = "text-[#3498db]";
+                }
+                
+                return (
+                  <Button 
+                    key={mirrorId}
+                    variant="outline" 
+                    className="w-full text-left justify-start bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] py-6 text-white hover:text-white"
+                    onClick={() => handleDownloadClick(mirrorId)}
+                  >
+                    <div className="flex items-center gap-2 w-full justify-between">
+                      <div className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}><path d="M8 17L12 21L16 17"></path><path d="M12 12V21"></path><path d="M20.88 18.09C22.08 17.08 22.73 15.53 22.73 13.88C22.73 10.64 20.13 8.04 16.89 8.04C16.24 7.04 15.28 6.26 14.12 5.77C12.96 5.28 11.66 5.11 10.4 5.29C9.14 5.47 7.97 6 7.04 6.81C6.1 7.63 5.44 8.69 5.15 9.87C3.87 10.09 2.73 10.84 1.96 11.93C1.19 13.03 0.850122 14.39 0.999783 15.75C1.14944 17.11 1.77932 18.36 2.79133 19.23C3.80334 20.1 5.1162 20.54 6.5 20.5H7.5"></path></svg>
+                        <span className="font-medium">{mirrorName}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <ExternalLink className="w-4 h-4 text-gray-500" />
+                      </div>
+                    </div>
+                  </Button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-[#1a1725]/50 border-[#2a2440] p-8 rounded-md text-center">
+              <p className="text-white">No mirrors available</p>
+              <p className="text-gray-400 text-sm mt-2">Click the refresh button to regenerate mirrors</p>
+            </div>
+          )}
 
-          {/* Pixeldrain Section */}
-          <div className="mb-6">
-            
-            
-            {hasPixeldrainMirror ? (
-              <Button 
-                variant="outline" 
-                className="w-full text-left justify-center bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] py-6 text-white hover:text-white"
-                onClick={() => handleDownloadClick('pixeldrain')}
-              >
-                <div className="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#3498db]"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                  <span className="font-medium">Pixeldrain Mirror</span>
-                  <ExternalLink className="w-4 h-4 ml-2 text-gray-500" />
-                </div>
-              </Button>
-            ) : (
-              <Button 
-                className="w-full bg-[#1a1725]/50 hover:bg-[#241e38]/50 border border-[#2a2440] py-6 text-white flex justify-center"
-                onClick={generatePixeldrainMirror}
-                disabled={isGeneratingPixeldrain}
-              >
-                <div className="flex items-center gap-2 justify-center">
-                  {isGeneratingPixeldrain ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#3498db]"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                  )}
-                  <span>{isGeneratingPixeldrain ? 'Generating Pixeldrain mirror...' : 'Generate Pixeldrain Mirror'}</span>
-                </div>
-              </Button>
-            )}
-          </div>
-
-          {/* Other file options */}
           <div className="grid grid-cols-2 gap-3 mt-4">
             <Button 
               variant="outline" 
