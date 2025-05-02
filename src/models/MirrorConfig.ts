@@ -1,3 +1,7 @@
+// MirrorConfig.ts
+// Last updated: 2025-05-01 07:08:31 UTC
+// Updated by: piyushsoftwaredev
+
 export interface Mirror {
   id: string;
   name: string;
@@ -32,6 +36,9 @@ export const DEFAULT_MIRRORS: Mirror[] = [
     baseUrl: 'https://pixeldrain.com/api/file/',
     isEnabled: true,
     regenerationPeriod: 48,
+    apiKey: 'eb3973b7-d3e9-4112-873d-0be8924dfa01',
+    retryCount: 3,
+    retryDelay: 3,
   },
   {
     id: 'gdflix',
@@ -96,16 +103,62 @@ export interface PixeldrainResponse {
   message?: string;
 }
 
+// Helper function to encode string to base64
+const btoa = (str: string): string => {
+  if (typeof window !== 'undefined' && window.btoa) {
+    return window.btoa(str);
+  }
+  return Buffer.from(str).toString('base64');
+};
+
+// Function to extract filename from URL or use a default name
+const getFilenameFromUrl = (url: string, fileId: string): string => {
+  try {
+    // Extract filename from the URL's path
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/');
+    let fileName = pathParts[pathParts.length - 1];
+    
+    // If the filename is 'view' (common in Google Drive URLs), try to use the second-to-last part
+    if (fileName === 'view' && pathParts.length > 2) {
+      fileName = pathParts[pathParts.length - 2];
+    }
+    
+    // If still no good filename, check query parameters
+    if (!fileName || fileName === 'view' || fileName === 'edit') {
+      const queryParams = new URLSearchParams(urlObj.search);
+      const nameFromQuery = queryParams.get('filename');
+      if (nameFromQuery) {
+        fileName = nameFromQuery;
+      }
+    }
+    
+    // If we still don't have a usable filename, use fileId with a generic extension
+    if (!fileName || fileName === 'view' || fileName === fileId) {
+      fileName = `file-${fileId}.mp4`;
+    }
+    
+    console.log(`Extracted filename: ${fileName} from URL: ${url}`);
+    return fileName;
+  } catch (e) {
+    console.error('Error extracting filename:', e);
+    return `file-${fileId}.mp4`;
+  }
+};
+
 // Function to generate mirror URL based on mirror type
 export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, originalUrl: string): Promise<MirrorResponse> => {
   try {
+    console.log(`Regenerating mirror URL for ${mirror.id} with file ID: ${fileId}`);
+    console.log(`Mirror config:`, mirror);
+    
     switch (mirror.id) {
       case 'direct':
         // Direct link is simply the Google Drive download URL
         return {
           mirrorId: mirror.id,
           fileId,
-          downloadUrl: ${mirror.baseUrl}${fileId},
+          downloadUrl: `${mirror.baseUrl}${fileId}`,
           status: 'success'
         };
         
@@ -127,9 +180,9 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
         
         while (retries > 0 && !gdflixResponse) {
           try {
-            console.log(GDflix API attempt ${mirror.retryCount! - retries + 1} for file ${fileId});
-            const apiUrl = ${mirror.currentDomain}v2/share?id=${fileId}&key=${mirror.apiKey};
-            console.log(Calling GDflix API: ${apiUrl});
+            console.log(`GDflix API attempt ${mirror.retryCount! - retries + 1} for file ${fileId}`);
+            const apiUrl = `${mirror.currentDomain}v2/share?id=${fileId}&key=${mirror.apiKey}`;
+            console.log(`Calling GDflix API: ${apiUrl}`);
             
             const res = await fetch(apiUrl);
             const data = await res.json();
@@ -137,8 +190,8 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
             
             // If we got a key, we're successful
             if (data && data.key) {
-              const downloadUrl = ${mirror.currentDomain}file/${data.key};
-              console.log(GDflix mirror created successfully: ${downloadUrl});
+              const downloadUrl = `${mirror.currentDomain}file/${data.key}`;
+              console.log(`GDflix mirror created successfully: ${downloadUrl}`);
               
               return {
                 mirrorId: mirror.id,
@@ -155,13 +208,13 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
             
             gdflixResponse = data;
           } catch (err) {
-            console.error(GDflix API attempt failed, retries left: ${retries - 1}, err);
+            console.error(`GDflix API attempt failed, retries left: ${retries - 1}`, err);
             retries--;
             
             if (retries > 0) {
               // Wait for retry delay before next attempt
               const delay = (mirror.retryDelay || 5) * 1000;
-              console.log(Waiting ${delay}ms before retrying...);
+              console.log(`Waiting ${delay}ms before retrying...`);
               await new Promise(resolve => setTimeout(resolve, delay));
             }
           }
@@ -186,41 +239,76 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
           message: 'GDflix file is being processed'
         };
         
-      case 'pixeldrain':
-        // Implementation for Pixeldrain API
-        try {
-          console.log(Initiating Pixeldrain processing for file ID: ${fileId});
+        case 'pixeldrain':
+          // Implementation for Pixeldrain API using our server API
+          if (!mirror.apiKey) {
+            return {
+              mirrorId: mirror.id,
+              fileId,
+              downloadUrl: '',
+              status: 'failed',
+              message: 'Missing API key for Pixeldrain'
+            };
+          }
+        
+          console.log(`Processing Pixeldrain mirror for file ID: ${fileId}`);
           
-          // In a real implementation, you would make an API call to Pixeldrain
-          // This would involve uploading the file to Pixeldrain, which can be done by:
-          // 1. Using their API to create a direct upload URL
-          // 2. Streaming the Google Drive download to Pixeldrain without storing on server
-          
-          // For now, we'll simulate the process with a placeholder
-          // In production, you would implement proper upload logic here
-          const pixeldrainUrl = https://pixeldrain.com/api/file/${fileId};
-          
-          // Return a processing status initially
-          return {
-            mirrorId: mirror.id,
-            fileId,
-            downloadUrl: '',
-            status: 'processing',
-            message: 'File is being processed on Pixeldrain'
-          };
-          
-          // In a real implementation, you might use a webhook or background job
-          // to update the status once the upload is complete
-        } catch (error) {
-          console.error('Pixeldrain processing failed:', error);
-          return {
-            mirrorId: mirror.id,
-            fileId,
-            downloadUrl: '',
-            status: 'failed',
-            message: 'Failed to process with Pixeldrain'
-          };
-        }
+          try {
+            // Call our server-side API endpoint that handles everything
+            const apiUrl = 'http://localhost:3001/api/pixeldrain';
+            console.log(`Calling Pixeldrain server API at: ${apiUrl}`);
+            
+            const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                fileId,
+                apiKey: mirror.apiKey
+              })
+            });
+            
+            console.log("API response status:", response.status);
+            
+            if (!response.ok) {
+              let errorMessage = `Server error: ${response.status}`;
+              try {
+                const errorData = await response.json();
+                console.error("Error data:", errorData);
+                if (errorData.message) {
+                  errorMessage = errorData.message;
+                }
+              } catch (e) {
+                console.error("Could not parse error response:", e);
+              }
+              throw new Error(errorMessage);
+            }
+            
+            const data = await response.json();
+            console.log('Server API response:', data);
+            
+            if (data.success && data.downloadUrl) {
+              return {
+                mirrorId: mirror.id,
+                fileId,
+                downloadUrl: data.downloadUrl,
+                status: 'success'
+              };
+            } else {
+              throw new Error(data.message || 'Failed to process file');
+            }
+          } catch (error) {
+            console.error('Pixeldrain processing error:', error);
+            
+            return {
+              mirrorId: mirror.id,
+              fileId,
+              downloadUrl: '',
+              status: 'failed',
+              message: error instanceof Error ? error.message : 'Failed to generate Pixeldrain mirror'
+            };
+          }
         
       default:
         return {
@@ -228,11 +316,11 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
           fileId,
           downloadUrl: '',
           status: 'failed',
-          message: Unknown mirror type: ${mirror.id}
+          message: `Unknown mirror type: ${mirror.id}`
         };
     }
   } catch (error) {
-    console.error(Error regenerating mirror URL for ${mirror.id}:, error);
+    console.error(`Error regenerating mirror URL for ${mirror.id}:`, error);
     return {
       mirrorId: mirror.id,
       fileId,

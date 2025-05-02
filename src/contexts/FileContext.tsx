@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   Mirror, 
@@ -6,6 +5,7 @@ import {
   regenerateMirrorUrl,
   DEFAULT_MIRRORS 
 } from '@/models/MirrorConfig';
+import { toast } from 'sonner';
 
 interface MirrorStatus {
   [key: string]: MirrorResponse;
@@ -31,11 +31,18 @@ interface FileMetadata {
   isProcessing: boolean;
 }
 
+// Updated mirror options interface
+interface MirrorOptions {
+  onlyGdflix?: boolean;
+  onlyPixeldrain?: boolean;
+  timeoutSeconds?: number;
+}
+
 interface FileContextType {
   files: FileMetadata[];
   addFile: (driveUrl: string) => Promise<FileMetadata>;
   getFileById: (id: string) => FileMetadata | undefined;
-  updateFileMirrors: (fileId: string) => Promise<void>;
+  updateFileMirrors: (fileId: string, options?: MirrorOptions) => Promise<void>;
   isLoading: boolean;
   error: string | null;
 }
@@ -60,7 +67,11 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Load files from localStorage on initialization
     const storedFiles = localStorage.getItem('files');
     if (storedFiles) {
-      setFiles(JSON.parse(storedFiles));
+      try {
+        setFiles(JSON.parse(storedFiles));
+      } catch (e) {
+        console.error('Error parsing stored files:', e);
+      }
     }
   }, []);
 
@@ -166,12 +177,27 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Function to process mirror generation in the background
-  const processMirrors = async (fileId: string, googleDriveId: string, originalUrl: string) => {
-    console.log(`Starting mirror processing for file: ${fileId}`);
+  // Updated to accept options parameter with Pixeldrain support
+  const processMirrors = async (fileId: string, googleDriveId: string, originalUrl: string, options?: MirrorOptions) => {
+    console.log(`Starting mirror processing for file: ${fileId}`, options);
     
     // Get active mirrors from configuration
-    const activeMirrors = DEFAULT_MIRRORS.filter(m => m.isEnabled);
+    let activeMirrors = DEFAULT_MIRRORS.filter(m => m.isEnabled);
+    
+    // Filter for specific mirrors as requested
+    if (options?.onlyGdflix) {
+      activeMirrors = activeMirrors.filter(mirror => mirror.id === 'gdflix');
+      if (activeMirrors.length === 0) {
+        toast.error("GDflix mirror is not enabled");
+        return;
+      }
+    } else if (options?.onlyPixeldrain) {
+      activeMirrors = activeMirrors.filter(mirror => mirror.id === 'pixeldrain');
+      if (activeMirrors.length === 0) {
+        toast.error("Pixeldrain mirror is not enabled");
+        return;
+      }
+    }
     
     // Update file to show it's processing
     setFiles(prevFiles => {
@@ -185,11 +211,26 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return updatedFiles;
     });
     
-    // Process each mirror in parallel
-    const mirrorPromises = activeMirrors.map(async (mirror) => {
+    // Set timeout for mirror generation if specified
+    const timeoutDuration = (options?.timeoutSeconds || 60) * 1000; // Default 60 seconds
+    
+    // Process each mirror with timeout protection
+    const processMirrorWithTimeout = async (mirror: Mirror) => {
       try {
-        console.log(`Generating mirror for ${mirror.id}`);
-        const mirrorResponse = await regenerateMirrorUrl(mirror, googleDriveId, originalUrl);
+        console.log(`Generating mirror for ${mirror.id} with ${timeoutDuration/1000}s timeout`);
+        
+        // Create a promise for the mirror generation
+        const mirrorPromise = regenerateMirrorUrl(mirror, googleDriveId, originalUrl);
+        
+        // Create a timeout promise
+        const timeoutPromise = new Promise<MirrorResponse>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error(`Timeout generating ${mirror.name} mirror after ${timeoutDuration/1000} seconds`));
+          }, timeoutDuration);
+        });
+        
+        // Race the mirror generation against the timeout
+        const mirrorResponse = await Promise.race([mirrorPromise, timeoutPromise]);
         
         // Update file with mirror status
         setFiles(prevFiles => {
@@ -214,46 +255,104 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return mirrorResponse;
       } catch (error) {
         console.error(`Error generating mirror for ${mirror.id}:`, error);
-        return {
+        
+        // Create a failure response
+        const failureResponse: MirrorResponse = {
           mirrorId: mirror.id,
           fileId: googleDriveId,
           downloadUrl: '',
-          status: 'failed' as const,
+          status: 'failed',
           message: error instanceof Error ? error.message : 'Unknown error'
         };
+        
+        // Update file with failure status
+        setFiles(prevFiles => {
+          const updatedFiles = prevFiles.map(file => {
+            if (file.id === fileId) {
+              const updatedMirrors = {
+                ...file.mirrors,
+                [mirror.id]: failureResponse
+              };
+              return { 
+                ...file, 
+                mirrors: updatedMirrors,
+                isProcessing: Object.values(updatedMirrors).some(m => m.status === 'processing')
+              };
+            }
+            return file;
+          });
+          localStorage.setItem('files', JSON.stringify(updatedFiles));
+          return updatedFiles;
+        });
+        
+        return failureResponse;
       }
-    });
+    };
     
-    // Wait for all mirror generations to complete
-    await Promise.all(mirrorPromises);
-    
-    // Final update to ensure isProcessing is correctly set
-    setFiles(prevFiles => {
-      const updatedFiles = prevFiles.map(file => {
-        if (file.id === fileId) {
-          const isStillProcessing = Object.values(file.mirrors).some(m => m.status === 'processing');
-          return { 
-            ...file, 
-            isProcessing: isStillProcessing
-          };
+    try {
+      // Process mirrors based on options
+      if (options?.onlyGdflix || options?.onlyPixeldrain) {
+        // For single mirror generation, process sequentially
+        const mirror = activeMirrors[0];
+        const mirrorResult = await processMirrorWithTimeout(mirror);
+        
+        // Show appropriate success or failure message
+        if (mirrorResult.status === 'success') {
+          const mirrorName = options.onlyGdflix ? 'GDflix' : 'Pixeldrain';
+          toast.success(`${mirrorName} mirror generated successfully`);
+        } else if (mirrorResult.status === 'failed') {
+          const mirrorName = options.onlyGdflix ? 'GDflix' : 'Pixeldrain';
+          toast.error(`Failed to generate ${mirrorName} mirror: ${mirrorResult.message}`);
         }
-        return file;
+      } else {
+        // For all mirrors, process in parallel
+        await Promise.all(activeMirrors.map(processMirrorWithTimeout));
+      }
+    } finally {
+      // Final update to ensure isProcessing is correctly set
+      setFiles(prevFiles => {
+        const updatedFiles = prevFiles.map(file => {
+          if (file.id === fileId) {
+            const isStillProcessing = Object.values(file.mirrors).some(m => m.status === 'processing');
+            return { 
+              ...file, 
+              isProcessing: isStillProcessing
+            };
+          }
+          return file;
+        });
+        localStorage.setItem('files', JSON.stringify(updatedFiles));
+        return updatedFiles;
       });
-      localStorage.setItem('files', JSON.stringify(updatedFiles));
-      return updatedFiles;
-    });
-    
-    console.log(`Completed mirror processing for file: ${fileId}`);
+      
+      console.log(`Completed mirror processing for file: ${fileId}`);
+    }
   };
 
-  // Function to update mirrors for a specific file
-  const updateFileMirrors = async (fileId: string) => {
+  // Updated to handle both GDflix and Pixeldrain options
+  const updateFileMirrors = async (fileId: string, options?: MirrorOptions) => {
     const file = files.find(f => f.id === fileId);
     if (!file) {
+      toast.error("File not found");
       throw new Error('File not found');
     }
     
-    await processMirrors(fileId, file.googleDriveId, file.originalUrl);
+    // Skip if already processing unless a specific mirror is requested
+    if (file.isProcessing && !options?.onlyGdflix && !options?.onlyPixeldrain) {
+      toast.info("File mirrors are already being processed");
+      return;
+    }
+    
+    // Show appropriate notification
+    if (options?.onlyGdflix) {
+      toast.info("Generating GDflix mirror...");
+    } else if (options?.onlyPixeldrain) {
+      toast.info("Generating Pixeldrain mirror...");
+    } else {
+      toast.info("Processing all file mirrors...");
+    }
+    
+    await processMirrors(fileId, file.googleDriveId, file.originalUrl, options);
   };
 
   // Extract file info from Google Drive URL
@@ -327,6 +426,7 @@ export const FileProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       console.error("Error extracting file info:", errorMessage);
       setError(errorMessage);
+      toast.error(errorMessage);
       throw new Error(errorMessage);
     }
   };
