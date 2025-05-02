@@ -23,7 +23,6 @@ import {
   LogOut,
   Import,
   Settings2,
-  Database,
   FileDigit
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -109,6 +108,21 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
 
                 <SidebarMenuItem>
                   <SidebarMenuButton 
+                    onClick={() => navigate('/file-queue')}
+                    isActive={location.pathname === '/file-queue'}
+                    tooltip="File Queue"
+                    className="hover:bg-purple-500/10 transition-colors"
+                  >
+                    <FileDigit className="mr-2 text-purple-400" />
+                    <span>File Queue</span>
+                    <div className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-300">
+                      New
+                    </div>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
                     onClick={() => navigate('/account-settings')}
                     isActive={location.pathname === '/account-settings'}
                     tooltip="Account Settings"
@@ -121,18 +135,6 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
 
                 {isAdmin && (
                   <>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton 
-                        onClick={() => navigate('/admin/filequeue')}
-                        isActive={location.pathname === '/admin/filequeue'}
-                        tooltip="File Queue"
-                        className="hover:bg-purple-500/10 transition-colors"
-                      >
-                        <FileDigit className="mr-2 text-purple-400" />
-                        <span>File Queue</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-
                     <SidebarMenuItem>
                       <SidebarMenuButton 
                         onClick={() => navigate('/users')}
