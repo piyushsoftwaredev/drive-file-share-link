@@ -256,7 +256,8 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
         
         try {
           // Call our server-side API endpoint that handles everything
-          const apiUrl = 'http://localhost:3001/api/pixeldrain';
+          // Updated to use relative URL to avoid CORS issues
+          const apiUrl = '/api/pixeldrain';
           console.log(`Calling Pixeldrain server API at: ${apiUrl}`);
           
           const response = await fetch(apiUrl, {
@@ -266,7 +267,8 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
             },
             body: JSON.stringify({
               fileId,
-              apiKey: mirror.apiKey
+              apiKey: mirror.apiKey,
+              originalUrl
             })
           });
           
@@ -295,6 +297,14 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
               fileId,
               downloadUrl: data.downloadUrl,
               status: 'success'
+            };
+          } else if (data.status === 'processing') {
+            return {
+              mirrorId: mirror.id,
+              fileId,
+              downloadUrl: '',
+              status: 'processing',
+              message: data.message || 'Processing file upload to Pixeldrain'
             };
           } else {
             throw new Error(data.message || 'Failed to process file');

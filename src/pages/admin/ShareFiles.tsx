@@ -14,13 +14,37 @@ const ShareFiles = () => {
   const [preview, setPreview] = useState<{name: string, type: string} | null>(null);
   const { addFile, isLoading } = useFiles();
 
+  // Function to extract filename from a Google Drive URL
+  const extractFilename = (url: string): string | null => {
+    try {
+      if (!url.includes('drive.google.com')) return null;
+      
+      // Try to extract from URL path or query parameters
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/');
+      let fileName = null;
+      
+      // For shared files that might have names in the URL
+      if (pathParts.length > 2 && pathParts[1] === 'file' && pathParts[2] === 'd') {
+        // Look for filename in the URL or params
+        const queryParams = new URLSearchParams(urlObj.search);
+        fileName = queryParams.get('filename') || queryParams.get('name');
+      }
+      
+      return fileName || "Preview file";
+    } catch (e) {
+      console.error("Error extracting filename", e);
+      return null;
+    }
+  };
+
   const handlePreviewUrl = () => {
     // Extract file name from URL if possible
     if (driveUrl) {
-      // This is just a placeholder, we'd normally extract more information from the URL
+      const extractedName = extractFilename(driveUrl);
       setPreview({
-        name: "Preview file",
-        type: "MKV"
+        name: extractedName || "Preview file",
+        type: extractedName?.split('.').pop()?.toUpperCase() || "MKV"
       });
     }
   };
@@ -78,7 +102,7 @@ const ShareFiles = () => {
             
             <Button 
               type="submit" 
-              className="w-full bg-oxxfile-purple hover:bg-oxxfile-purple/90"
+              className="w-full bg-oxxfile-purple hover:bg-oxxfile-purple/90 text-white"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -129,7 +153,7 @@ const ShareFiles = () => {
                       <span className="text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded mr-2">
                         Active
                       </span>
-                      <RefreshCw className="w-3.5 h-3.5 text-gray-500" />
+                      <RefreshCw className="w-3.5 h-3.5 text-gray-500 hover:text-white" />
                     </div>
                   </div>
                   
@@ -142,7 +166,7 @@ const ShareFiles = () => {
                       <span className="text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded mr-2">
                         Active
                       </span>
-                      <RefreshCw className="w-3.5 h-3.5 text-gray-500" />
+                      <RefreshCw className="w-3.5 h-3.5 text-gray-500 hover:text-white" />
                     </div>
                   </div>
                   
@@ -155,7 +179,7 @@ const ShareFiles = () => {
                       <span className="text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded mr-2">
                         Active
                       </span>
-                      <RefreshCw className="w-3.5 h-3.5 text-gray-500" />
+                      <RefreshCw className="w-3.5 h-3.5 text-gray-500 hover:text-white" />
                     </div>
                   </div>
                 </div>
