@@ -40,19 +40,19 @@ const FileQueue = () => {
   const getMirrorStatusBadge = (status: 'success' | 'processing' | 'failed' | undefined) => {
     switch (status) {
       case 'success':
-        return <Badge className="bg-green-500/20 text-green-400 border-green-500 hover:bg-green-500/30">
+        return <Badge className="bg-green-500/10 text-green-400 border-green-500 hover:bg-green-500/20">
           <CheckCircle className="w-3 h-3 mr-1" />Ready
         </Badge>;
       case 'processing':
-        return <Badge className="bg-amber-500/20 text-amber-400 border-amber-500 hover:bg-amber-500/30">
+        return <Badge className="bg-amber-500/10 text-amber-400 border-amber-500 hover:bg-amber-500/20">
           <Clock className="w-3 h-3 mr-1 animate-pulse" />Processing
         </Badge>;
       case 'failed':
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500 hover:bg-red-500/30">
+        return <Badge className="bg-red-500/10 text-red-400 border-red-500 hover:bg-red-500/20">
           <AlertTriangle className="w-3 h-3 mr-1" />Failed
         </Badge>;
       default:
-        return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500 hover:bg-gray-500/30">
+        return <Badge className="bg-gray-500/10 text-gray-400 border-gray-500 hover:bg-gray-500/20">
           Pending
         </Badge>;
     }
@@ -80,7 +80,7 @@ const FileQueue = () => {
       </div>
       
       {filteredFiles.length === 0 ? (
-        <Card className="bg-gray-900/60 border-gray-800">
+        <Card className="bg-gray-900 border-gray-800">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <FileIcon className="h-16 w-16 text-gray-400 mb-4" />
             <h3 className="text-xl font-medium text-white">No files in queue</h3>
@@ -90,7 +90,7 @@ const FileQueue = () => {
       ) : (
         <div className="space-y-4">
           {filteredFiles.map(file => (
-            <Card key={file.id} className="bg-gray-900/60 border-gray-800">
+            <Card key={file.id} className="bg-gray-900 border-gray-800">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white truncate">{file.name}</CardTitle>
@@ -134,9 +134,9 @@ const FileQueue = () => {
                   
                   <div className="space-y-3">
                     {/* GDflix Mirror */}
-                    <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-md">
+                    <div className="flex items-center justify-between p-3 bg-gray-800 rounded-md">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-full bg-[#f39c12]/20 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-[#f39c12]/10 flex items-center justify-center">
                           <ExternalLink className="w-4 h-4 text-[#f39c12]" />
                         </div>
                         <div>
@@ -166,9 +166,9 @@ const FileQueue = () => {
                     </div>
                     
                     {/* Pixeldrain Mirror */}
-                    <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-md">
+                    <div className="flex items-center justify-between p-3 bg-gray-800 rounded-md">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-full bg-[#9b87f5]/20 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-[#9b87f5]/10 flex items-center justify-center">
                           <ExternalLink className="w-4 h-4 text-[#9b87f5]" />
                         </div>
                         <div>

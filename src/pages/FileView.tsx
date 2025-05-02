@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import FileDetails from '@/components/FileDetails';
@@ -41,7 +42,7 @@ const FileView = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0f0a19] to-[#16121f] py-4 px-2 md:py-8 md:px-4">
+    <div className="min-h-screen bg-gradient-to-b from-[#0a0810] to-[#161321] py-4 px-2 md:py-8 md:px-4">
       <div className="container mx-auto max-w-3xl">
         {isLoading ? (
           <div className="flex justify-center items-center py-20">
@@ -89,8 +90,6 @@ const FileView = () => {
           </div>
         )}
       </div>
-      
-      
     </div>
   );
 };

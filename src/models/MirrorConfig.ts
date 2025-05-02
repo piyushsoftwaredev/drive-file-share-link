@@ -1,7 +1,6 @@
 
 // MirrorConfig.ts
-// Last updated: 2025-05-02 07:08:31 UTC
-// Updated by: lovable.dev
+// Last updated: 2025-05-02 10:21:05 UTC
 
 export interface Mirror {
   id: string;
@@ -104,49 +103,6 @@ export interface PixeldrainResponse {
   message?: string;
 }
 
-// Helper function to encode string to base64
-const btoa = (str: string): string => {
-  if (typeof window !== 'undefined' && window.btoa) {
-    return window.btoa(str);
-  }
-  return Buffer.from(str).toString('base64');
-};
-
-// Function to extract filename from URL or use a default name
-const getFilenameFromUrl = (url: string, fileId: string): string => {
-  try {
-    // Extract filename from the URL's path
-    const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/');
-    let fileName = pathParts[pathParts.length - 1];
-    
-    // If the filename is 'view' (common in Google Drive URLs), try to use the second-to-last part
-    if (fileName === 'view' && pathParts.length > 2) {
-      fileName = pathParts[pathParts.length - 2];
-    }
-    
-    // If still no good filename, check query parameters
-    if (!fileName || fileName === 'view' || fileName === 'edit') {
-      const queryParams = new URLSearchParams(urlObj.search);
-      const nameFromQuery = queryParams.get('filename');
-      if (nameFromQuery) {
-        fileName = nameFromQuery;
-      }
-    }
-    
-    // If we still don't have a usable filename, use fileId with a generic extension
-    if (!fileName || fileName === 'view' || fileName === fileId) {
-      fileName = `file-${fileId}.mp4`;
-    }
-    
-    console.log(`Extracted filename: ${fileName} from URL: ${url}`);
-    return fileName;
-  } catch (e) {
-    console.error('Error extracting filename:', e);
-    return `file-${fileId}.mp4`;
-  }
-};
-
 // Function to generate mirror URL based on mirror type
 export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, originalUrl: string): Promise<MirrorResponse> => {
   try {
@@ -241,30 +197,20 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
         };
         
       case 'pixeldrain':
-        // Implementation for Pixeldrain API using our server API
-        if (!mirror.apiKey) {
-          return {
-            mirrorId: mirror.id,
-            fileId,
-            downloadUrl: '',
-            status: 'failed',
-            message: 'Missing API key for Pixeldrain'
-          };
-        }
-      
-        console.log(`Processing Pixeldrain mirror for file ID: ${fileId}`);
-        
+        // Call our API endpoint for Pixeldrain processing
         try {
-          // Call our server-side API endpoint that handles everything
-          // Updated to use relative URL to avoid CORS issues
-          const apiUrl = '/api/pixeldrain';
-          console.log(`Calling Pixeldrain server API at: ${apiUrl}`);
+          console.log('Processing Pixeldrain mirror through API endpoint');
           
-          const response = await fetch(apiUrl, {
+          // Get base URL for API calls (works in both development and production)
+          const baseUrl = window.location.origin;
+          
+          // Build the endpoint URL
+          const apiEndpoint = `${baseUrl}/api/pixeldrain`;
+          console.log(`Calling Pixeldrain API endpoint: ${apiEndpoint}`);
+          
+          const response = await fetch(apiEndpoint, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               fileId,
               apiKey: mirror.apiKey,
@@ -272,46 +218,37 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
             })
           });
           
-          console.log("API response status:", response.status);
-          
-          if (!response.ok) {
-            let errorMessage = `Server error: ${response.status}`;
-            try {
-              const errorData = await response.json();
-              console.error("Error data:", errorData);
-              if (errorData.message) {
-                errorMessage = errorData.message;
-              }
-            } catch (e) {
-              console.error("Could not parse error response:", e);
-            }
-            throw new Error(errorMessage);
+          // Check if the response is JSON
+          const contentType = response.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Received non-JSON response from Pixeldrain API");
           }
           
           const data = await response.json();
-          console.log('Server API response:', data);
+          console.log('Pixeldrain API response:', data);
           
-          if (data.success && data.downloadUrl) {
+          if (!response.ok) {
+            throw new Error(data.message || 'Error processing Pixeldrain request');
+          }
+          
+          if (data.success) {
             return {
               mirrorId: mirror.id,
               fileId,
               downloadUrl: data.downloadUrl,
               status: 'success'
             };
-          } else if (data.status === 'processing') {
+          } else {
             return {
               mirrorId: mirror.id,
               fileId,
               downloadUrl: '',
-              status: 'processing',
-              message: data.message || 'Processing file upload to Pixeldrain'
+              status: 'failed',
+              message: data.message || 'Pixeldrain processing failed'
             };
-          } else {
-            throw new Error(data.message || 'Failed to process file');
           }
         } catch (error) {
           console.error('Pixeldrain processing error:', error);
-          
           return {
             mirrorId: mirror.id,
             fileId,
@@ -320,7 +257,7 @@ export const regenerateMirrorUrl = async (mirror: Mirror, fileId: string, origin
             message: error instanceof Error ? error.message : 'Failed to generate Pixeldrain mirror'
           };
         }
-      
+        
       default:
         return {
           mirrorId: mirror.id,
