@@ -31,7 +31,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
 
   if (!file) {
     return (
-      <Card className="w-full max-w-3xl mx-auto p-8 bg-gray-900/50 border-gray-800">
+      <Card className="w-full max-w-3xl mx-auto p-8 bg-gray-900/50 border-gray-800 rounded-xl">
         <h2 className="text-2xl font-bold text-white mb-4">File not found</h2>
         <p className="text-gray-400">The requested file could not be found.</p>
       </Card>
@@ -91,6 +91,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
       await updateFileMirrors(fileId, { onlyGdflix: true });
       toast.success("GDflix mirror generated successfully");
     } catch (error) {
+      console.error("Error generating GDflix mirror:", error);
       toast.error("Failed to generate GDflix mirror");
     } finally {
       setIsGeneratingGdflix(false);
@@ -109,6 +110,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
       await updateFileMirrors(fileId, { onlyPixeldrain: true });
       toast.success("Pixeldrain mirror generated successfully");
     } catch (error) {
+      console.error("Error generating Pixeldrain mirror:", error);
       toast.error("Failed to generate Pixeldrain mirror");
     } finally {
       setIsGeneratingPixeldrain(false);
@@ -126,9 +128,9 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
                              file.mirrors?.pixeldrain?.downloadUrl;
 
   return (
-    <div className="rounded-lg overflow-hidden bg-[#14121d] bg-opacity-80 border border-[#2a2440] backdrop-blur-sm shadow-xl">
+    <div className="rounded-xl overflow-hidden bg-[#14121d] bg-opacity-80 border border-[#2a2440] backdrop-blur-sm shadow-xl">
       {/* File name header in gradient container */}
-      <div className="bg-gradient-to-r from-[#1e1736] to-[#281e4a] p-4 rounded-t-lg">
+      <div className="bg-gradient-to-r from-[#1e1736] to-[#281e4a] p-4 rounded-t-xl">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0">
             <FileIcon type={fileExtension} size="lg" />
@@ -150,7 +152,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
 
       {/* File details */}
       <div className="p-4 md:p-6">
-        <div className="bg-[#1a1725] rounded-lg p-4 mb-6 border border-[#2a2440]">
+        <div className="bg-[#1a1725] rounded-xl p-4 mb-6 border border-[#2a2440]">
           <div className="grid grid-cols-2 gap-y-4">
             <div className="flex items-center gap-2">
               <div className="text-gray-400 flex items-center gap-1">
@@ -206,7 +208,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
 
         {/* Call to action button */}
         <Button 
-          className="w-full bg-gradient-to-r from-[#3498db] to-[#2980b9] hover:from-[#2980b9] hover:to-[#3498db] text-white py-6 mb-6 flex items-center justify-center gap-2 font-bold border-0"
+          className="w-full bg-gradient-to-r from-[#3498db] to-[#2980b9] hover:from-[#2980b9] hover:to-[#3498db] text-white py-6 mb-6 flex items-center justify-center gap-2 font-bold border-0 rounded-xl"
           onClick={handleCopyShareLink}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -235,12 +237,10 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
 
           {/* GDflix Section */}
           <div className="mb-4">
-            
-            
             {hasGdflixMirror ? (
               <Button 
                 variant="outline" 
-                className="w-full text-left justify-center bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] py-6 text-white hover:text-white"
+                className="w-full text-left justify-center bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] py-6 text-white hover:text-white rounded-xl"
                 onClick={() => handleDownloadClick('gdflix')}
               >
                 <div className="flex items-center gap-2">
@@ -251,7 +251,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
               </Button>
             ) : (
               <Button 
-                className="w-full bg-[#1a1725]/50 hover:bg-[#241e38]/50 border border-[#2a2440] py-6 text-white flex justify-center"
+                className="w-full bg-[#1a1725]/50 hover:bg-[#241e38]/50 border border-[#2a2440] py-6 text-white flex justify-center rounded-xl"
                 onClick={generateGdflixMirror}
                 disabled={isGeneratingGdflix}
               >
@@ -269,12 +269,10 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
 
           {/* Pixeldrain Section */}
           <div className="mb-6">
-            
-            
             {hasPixeldrainMirror ? (
               <Button 
                 variant="outline" 
-                className="w-full text-left justify-center bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] py-6 text-white hover:text-white"
+                className="w-full text-left justify-center bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] py-6 text-white hover:text-white rounded-xl"
                 onClick={() => handleDownloadClick('pixeldrain')}
               >
                 <div className="flex items-center gap-2">
@@ -285,7 +283,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
               </Button>
             ) : (
               <Button 
-                className="w-full bg-[#1a1725]/50 hover:bg-[#241e38]/50 border border-[#2a2440] py-6 text-white flex justify-center"
+                className="w-full bg-[#1a1725]/50 hover:bg-[#241e38]/50 border border-[#2a2440] py-6 text-white flex justify-center rounded-xl"
                 onClick={generatePixeldrainMirror}
                 disabled={isGeneratingPixeldrain}
               >
@@ -305,7 +303,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
           <div className="grid grid-cols-2 gap-3 mt-4">
             <Button 
               variant="outline" 
-              className="bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] text-white hover:text-white"
+              className="bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] text-white hover:text-white rounded-xl"
               onClick={() => toast.info("QR Code feature - this is a demo")}
             >
               <QrCode className="w-4 h-4 mr-2" />
@@ -314,7 +312,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
             
             <Button 
               variant="outline" 
-              className="bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] text-white hover:text-white"
+              className="bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] text-white hover:text-white rounded-xl"
               onClick={handleCopyShareLink}
             >
               <Share2 className="w-4 h-4 mr-2" />
@@ -325,7 +323,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
           {isVideoFile && (
             <Button 
               variant="outline" 
-              className="w-full mt-4 bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] text-white hover:text-white"
+              className="w-full mt-4 bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] text-white hover:text-white rounded-xl"
               onClick={() => toast.info("Watch Video feature - this is a demo")}
             >
               <PlayCircle className="w-4 h-4 mr-2" />

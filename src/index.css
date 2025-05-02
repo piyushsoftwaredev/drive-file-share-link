@@ -1,4 +1,3 @@
-
 @import "./styles/glassStyles.css";
 @import "tailwindcss/base";
 @import "tailwindcss/components";
@@ -9,6 +8,10 @@
   --oxxfile-dark-bg: #0a0810;
   --oxxfile-darker-bg: #06040a;
   --oxxfile-accent: #d946ef;
+  --border-radius: 12px;
+  --button-radius: 10px;
+  --card-radius: 16px;
+  --input-radius: 8px;
 }
 
 body {
@@ -51,6 +54,7 @@ code {
 
 ::-webkit-scrollbar-track {
   background: rgba(20, 20, 30, 0.4);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -66,6 +70,7 @@ code {
 button.animated-button {
   position: relative;
   overflow: hidden;
+  border-radius: var(--button-radius);
 }
 
 button.animated-button::after {
@@ -87,4 +92,37 @@ button.animated-button:active::after {
   height: 300px;
   opacity: 1;
   transition: all 0s;
+}
+
+/* Card styles */
+.card, .card-container {
+  border-radius: var(--card-radius);
+  overflow: hidden;
+}
+
+.input-field {
+  border-radius: var(--input-radius);
+}
+
+/* Enhanced sidebar styles */
+.sidebar-item {
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 0.25rem;
+  border-radius: 10px;
+  color: #ffffffcc;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.sidebar-item:hover {
+  background-color: #2a2440;
+  color: #ffffff;
+  border-radius: 10px;
+}
+
+.sidebar-item.active {
+  background-color: #9b87f5;
+  color: #ffffff;
+  border-radius: 10px;
 }

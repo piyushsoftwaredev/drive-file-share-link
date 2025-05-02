@@ -17,7 +17,7 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0a0810] to-[#161321] py-8 px-4 animate-gradient">
-      <div className="glass-card p-10 text-center max-w-lg w-full pulse-glow animate-fade relative overflow-hidden">
+      <div className="glass-card p-10 text-center max-w-lg w-full pulse-glow animate-fade relative overflow-hidden rounded-xl">
         {/* Add a subtle glow effect in the background */}
         <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-500 rounded-xl opacity-20 blur-xl animate-pulse"></div>
         
@@ -30,7 +30,7 @@ const NotFound = () => {
           </p>
           <Button 
             onClick={() => navigate("/")}
-            className="glow-button px-8 py-6 rounded-lg text-white font-medium text-lg"
+            className="glow-button px-8 py-6 rounded-xl text-white font-medium text-lg"
           >
             Return to Home
           </Button>
