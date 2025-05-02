@@ -67,12 +67,12 @@ const FileQueue = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-white">File Queue</h1>
+      <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-300">File Queue</h1>
       
-      <div className="flex items-center space-x-2">
-        <Search className="w-5 h-5 text-gray-400" />
+      <div className="flex items-center space-x-2 glass p-3 rounded-lg">
+        <Search className="w-5 h-5 text-purple-400" />
         <Input 
-          className="bg-gray-800 border-gray-700 text-white"
+          className="bg-black/20 border-gray-700/40 text-white focus:border-purple-500/50"
           placeholder="Search files by name or ID..." 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -80,9 +80,9 @@ const FileQueue = () => {
       </div>
       
       {filteredFiles.length === 0 ? (
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="glass-card border-purple-500/10">
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <FileIcon className="h-16 w-16 text-gray-400 mb-4" />
+            <FileIcon className="h-16 w-16 text-purple-400/50 mb-4" />
             <h3 className="text-xl font-medium text-white">No files in queue</h3>
             <p className="text-gray-400 mt-2">Files will appear here after you share them.</p>
           </CardContent>
@@ -90,20 +90,20 @@ const FileQueue = () => {
       ) : (
         <div className="space-y-4">
           {filteredFiles.map(file => (
-            <Card key={file.id} className="bg-gray-900 border-gray-800">
+            <Card key={file.id} className="glass-card hover-glow transition-all duration-300">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-white truncate">{file.name}</CardTitle>
+                  <CardTitle className="text-white truncate purple-gradient-text">{file.name}</CardTitle>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white"
+                    className="bg-black/30 border-purple-500/30 text-purple-300 hover:bg-purple-900/20 hover:text-white"
                     onClick={() => handleRefreshMirrors(file.id)}
                     disabled={processingFiles[file.id] || file.isProcessing}
                   >
                     {(processingFiles[file.id] || file.isProcessing) ? 
-                      <RefreshCw className="h-4 w-4 animate-spin" /> : 
-                      <RefreshCw className="h-4 w-4" />}
+                      <RefreshCw className="h-4 w-4 animate-spin text-purple-400" /> : 
+                      <RefreshCw className="h-4 w-4 text-purple-400" />}
                     <span className="ml-2">Refresh All</span>
                   </Button>
                 </div>
@@ -129,12 +129,12 @@ const FileQueue = () => {
                   </div>
                 </div>
                 
-                <div className="border-t border-gray-800 pt-4">
-                  <h4 className="text-white font-medium mb-3">Mirrors Status</h4>
+                <div className="border-t border-gray-800/30 pt-4">
+                  <h4 className="text-white font-medium mb-3 purple-gradient-text">Mirrors Status</h4>
                   
                   <div className="space-y-3">
                     {/* GDflix Mirror */}
-                    <div className="flex items-center justify-between p-3 bg-gray-800 rounded-md">
+                    <div className="flex items-center justify-between p-3 bg-black/30 rounded-md border border-gray-800/30">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 rounded-full bg-[#f39c12]/10 flex items-center justify-center">
                           <ExternalLink className="w-4 h-4 text-[#f39c12]" />
@@ -156,7 +156,7 @@ const FileQueue = () => {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white"
+                          className="bg-black/30 border-amber-500/30 text-amber-300 hover:bg-amber-900/20"
                           onClick={() => handleRefreshMirrors(file.id, 'gdflix')}
                           disabled={processingFiles[file.id] || file.isProcessing}
                         >
@@ -166,7 +166,7 @@ const FileQueue = () => {
                     </div>
                     
                     {/* Pixeldrain Mirror */}
-                    <div className="flex items-center justify-between p-3 bg-gray-800 rounded-md">
+                    <div className="flex items-center justify-between p-3 bg-black/30 rounded-md border border-gray-800/30">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 rounded-full bg-[#9b87f5]/10 flex items-center justify-center">
                           <ExternalLink className="w-4 h-4 text-[#9b87f5]" />
@@ -188,7 +188,7 @@ const FileQueue = () => {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white"
+                          className="bg-black/30 border-purple-500/30 text-purple-300 hover:bg-purple-900/20"
                           onClick={() => handleRefreshMirrors(file.id, 'pixeldrain')}
                           disabled={processingFiles[file.id] || file.isProcessing}
                         >
@@ -200,17 +200,17 @@ const FileQueue = () => {
                 </div>
                 
                 {/* Links section */}
-                <div className="border-t border-gray-800 pt-4">
-                  <h4 className="text-white font-medium mb-3">Share Links</h4>
+                <div className="border-t border-gray-800/30 pt-4">
+                  <h4 className="text-white font-medium mb-3 purple-gradient-text">Share Links</h4>
                   <div className="flex items-center space-x-2">
                     <Input 
-                      className="bg-gray-800 border-gray-700 text-white"
+                      className="bg-black/30 border-gray-700/40 text-white"
                       value={`${window.location.origin}/file/${file.id}`} 
                       readOnly 
                     />
                     <Button 
                       variant="outline" 
-                      className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white"
+                      className="bg-black/30 border-purple-500/30 text-purple-300 hover:bg-purple-900/20 hover:text-white"
                       onClick={() => {
                         navigator.clipboard.writeText(`${window.location.origin}/file/${file.id}`);
                         toast.success('Share link copied to clipboard!');

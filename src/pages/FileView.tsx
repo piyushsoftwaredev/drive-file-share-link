@@ -52,7 +52,7 @@ const FileView = () => {
             </div>
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="flex flex-col items-center justify-center py-20 text-center rounded-xl bg-black/30 backdrop-blur-xl border border-purple-500/10 shadow-[0_0_15px_rgba(155,135,245,0.15)] p-8">
             <FileX className="w-16 h-16 text-red-500 mb-4" />
             <h2 className="text-white text-xl font-bold mb-2">File Not Found</h2>
             <p className="text-gray-400 mb-6">{error}</p>
@@ -73,9 +73,11 @@ const FileView = () => {
             </div>
           </div>
         ) : file ? (
-          <FileDetails fileId={fileId} />
+          <div className="rounded-xl bg-black/20 backdrop-blur-xl border border-purple-500/10 shadow-[0_0_15px_rgba(155,135,245,0.15)]">
+            <FileDetails fileId={fileId} />
+          </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="flex flex-col items-center justify-center py-20 text-center rounded-xl bg-black/30 backdrop-blur-xl border border-purple-500/10 shadow-[0_0_15px_rgba(155,135,245,0.15)] p-8">
             <AlertCircle className="w-16 h-16 text-amber-500 mb-4" />
             <h2 className="text-white text-xl font-bold mb-2">Something Went Wrong</h2>
             <p className="text-gray-400 mb-6">

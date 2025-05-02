@@ -66,40 +66,57 @@ export const generatePixeldrainUrl = async (
       })
     });
     
-    // Check if the response is JSON
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-      throw new Error(`Received non-JSON response from Pixeldrain API: ${await response.text()}`);
-    }
-    
-    const data = await response.json();
-    console.log('Pixeldrain API response:', data);
-    
+    // First, check if the response is OK before attempting to parse JSON
     if (!response.ok) {
-      throw new Error(data.message || 'Error processing Pixeldrain request');
+      // Try to get the text of the response for better error reporting
+      const errorText = await response.text();
+      
+      // If response contains HTML (starts with <!DOCTYPE or <html), it's not a valid API response
+      if (errorText.includes('<!DOCTYPE') || errorText.includes('<html')) {
+        throw new Error(`Server returned HTML instead of JSON. The API endpoint might be misconfigured or unavailable.`);
+      }
+      
+      // Try to parse as JSON if possible
+      try {
+        const errorJson = JSON.parse(errorText);
+        throw new Error(errorJson.message || `API error: ${response.status}`);
+      } catch (e) {
+        // If parsing fails, return the raw error text (truncated if too long)
+        const truncatedText = errorText.length > 100 ? `${errorText.substring(0, 100)}...` : errorText;
+        throw new Error(`API error (${response.status}): ${truncatedText}`);
+      }
     }
     
-    if (data.success) {
-      // Update the cache
-      pixeldrainCache[fileId] = {
-        pixeldrainId: data.pixeldrainId,
-        url: data.downloadUrl,
-        timestamp: Date.now(),
-        fileName: data.fileName
-      };
+    // Now try to get JSON response
+    try {
+      const data = await response.json();
+      console.log('Pixeldrain API response:', data);
       
-      return {
-        success: true,
-        pixeldrainId: data.pixeldrainId,
-        downloadUrl: data.downloadUrl,
-        fileName: data.fileName,
-        message: data.message
-      };
-    } else {
-      return {
-        success: false,
-        message: data.message || 'Pixeldrain processing failed'
-      };
+      if (data.success) {
+        // Update the cache
+        pixeldrainCache[fileId] = {
+          pixeldrainId: data.pixeldrainId,
+          url: data.downloadUrl,
+          timestamp: Date.now(),
+          fileName: data.fileName
+        };
+        
+        return {
+          success: true,
+          pixeldrainId: data.pixeldrainId,
+          downloadUrl: data.downloadUrl,
+          fileName: data.fileName,
+          message: data.message
+        };
+      } else {
+        return {
+          success: false,
+          message: data.message || 'Pixeldrain processing failed'
+        };
+      }
+    } catch (jsonError) {
+      console.error('Error parsing JSON response:', jsonError);
+      throw new Error('Received invalid JSON response from Pixeldrain API');
     }
   } catch (error) {
     console.error('Error generating Pixeldrain URL:', error);
