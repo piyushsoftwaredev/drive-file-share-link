@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useFiles } from '@/contexts/FileContext';
 import FileIcon from './FileIcon';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { 
   Clock, 
   Lock, 
@@ -14,7 +15,8 @@ import {
   QrCode, 
   PlayCircle, 
   ExternalLink,
-  RefreshCw
+  RefreshCw,
+  CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
@@ -27,7 +29,32 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
   const { getFileById, updateFileMirrors } = useFiles();
   const [isGeneratingGdflix, setIsGeneratingGdflix] = useState(false);
   const [isGeneratingPixeldrain, setIsGeneratingPixeldrain] = useState(false);
+  const toastIdsRef = useRef<Record<string, string>>({});
   const file = getFileById(fileId);
+
+  // Function to prevent duplicate toasts
+  const showToast = (type: 'success' | 'error' | 'info', message: string, id: string) => {
+    // If we already have this toast ID active, don't show again
+    if (toastIdsRef.current[id]) {
+      return;
+    }
+    
+    // Show toast and store the ID as string
+    let toastId: string;
+    if (type === 'success') {
+      toastId = String(toast.success(message, { id }));
+    } else if (type === 'error') {
+      toastId = String(toast.error(message, { id }));
+    } else {
+      toastId = String(toast.info(message, { id }));
+    }
+    
+    // Store the ID and remove from tracking after toast completes
+    toastIdsRef.current[id] = toastId;
+    setTimeout(() => {
+      delete toastIdsRef.current[id];
+    }, 5000);
+  };
 
   if (!file) {
     return (
@@ -56,13 +83,13 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
     // Construct the absolute URL
     const shareUrl = `${window.location.origin}/file/${fileId}`;
     navigator.clipboard.writeText(shareUrl);
-    toast.success("Link copied to clipboard!");
+    showToast('success', "Link copied to clipboard!", "copy-link");
   };
 
   const handleDownloadClick = (mirrorId: string) => {
     const mirror = file.mirrors[mirrorId];
     if (!mirror || !mirror.downloadUrl) {
-      toast.error("Download link is not available yet.");
+      showToast('error', "Download link is not available yet.", "download-error");
       return;
     }
     
@@ -71,11 +98,11 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
     
     // Show different toast message based on mirror type
     if (mirrorId === 'gdflix') {
-      toast.info("Redirecting to GDflix...");
+      showToast('info', "Redirecting to GDflix...", "redirect-gdflix");
     } else if (mirrorId === 'pixeldrain') {
-      toast.info("Redirecting to Pixeldrain...");
+      showToast('info', "Redirecting to Pixeldrain...", "redirect-pixeldrain");
     } else {
-      toast.info("Download initiated. This may take a moment.");
+      showToast('info', "Download initiated. This may take a moment.", "download-generic");
     }
   };
 
@@ -84,14 +111,20 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
     if (isGeneratingGdflix) return;
 
     setIsGeneratingGdflix(true);
-    toast.info("Generating GDflix mirror...");
+    showToast('info', "Generating GDflix mirror...", "generating-gdflix");
 
     try {
       // Pass a flag to only generate gdflix mirror
-      await updateFileMirrors(fileId, { onlyGdflix: true });
-      toast.success("GDflix mirror generated successfully");
+      const result = await updateFileMirrors(fileId, { onlyGdflix: true });
+      
+      // Check if the mirror was generated successfully
+      if (result && result.status === 'success') {
+        showToast('success', "GDflix mirror generated successfully", "success-gdflix");
+      } else {
+        throw new Error("Failed to generate GDflix mirror");
+      }
     } catch (error) {
-      toast.error("Failed to generate GDflix mirror");
+      showToast('error', "Failed to generate GDflix mirror", "error-gdflix");
     } finally {
       setIsGeneratingGdflix(false);
     }
@@ -102,14 +135,20 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
     if (isGeneratingPixeldrain) return;
 
     setIsGeneratingPixeldrain(true);
-    toast.info("Generating Pixeldrain mirror...");
+    showToast('info', "Generating Pixeldrain mirror...", "generating-pixeldrain");
 
     try {
       // Pass a flag to only generate pixeldrain mirror
-      await updateFileMirrors(fileId, { onlyPixeldrain: true });
-      toast.success("Pixeldrain mirror generated successfully");
+      const result = await updateFileMirrors(fileId, { onlyPixeldrain: true });
+      
+      // Check if the mirror was generated successfully
+      if (result && result.status === 'success') {
+        showToast('success', "Pixeldrain mirror generated successfully", "success-pixeldrain");
+      } else {
+        throw new Error("Failed to generate Pixeldrain mirror");
+      }
     } catch (error) {
-      toast.error("Failed to generate Pixeldrain mirror");
+      showToast('error', "Failed to generate Pixeldrain mirror", "error-pixeldrain");
     } finally {
       setIsGeneratingPixeldrain(false);
     }
@@ -124,6 +163,9 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
   // Check if Pixeldrain mirror is available
   const hasPixeldrainMirror = file.mirrors?.pixeldrain?.status === 'success' && 
                              file.mirrors?.pixeldrain?.downloadUrl;
+
+  // Is currently generating any mirror
+  const isGeneratingAny = isGeneratingGdflix || isGeneratingPixeldrain;
 
   return (
     <div className="rounded-lg overflow-hidden bg-[#14121d] bg-opacity-80 border border-[#2a2440] backdrop-blur-sm shadow-xl">
@@ -235,8 +277,6 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
 
           {/* GDflix Section */}
           <div className="mb-4">
-            
-            
             {hasGdflixMirror ? (
               <Button 
                 variant="outline" 
@@ -247,13 +287,17 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#f39c12]"><path d="M8 17L12 21L16 17"></path><path d="M12 12V21"></path><path d="M20.88 18.09C22.08 17.08 22.73 15.53 22.73 13.88C22.73 10.64 20.13 8.04 16.89 8.04C16.24 7.04 15.28 6.26 14.12 5.77C12.96 5.28 11.66 5.11 10.4 5.29C9.14 5.47 7.97 6 7.04 6.81C6.1 7.63 5.44 8.69 5.15 9.87C3.87 10.09 2.73 10.84 1.96 11.93C1.19 13.03 0.850122 14.39 0.999783 15.75C1.14944 17.11 1.77932 18.36 2.79133 19.23C3.80334 20.1 5.1162 20.54 6.5 20.5H7.5"></path></svg>
                   <span className="font-medium">GDflix Mirror</span>
                   <ExternalLink className="w-4 h-4 ml-2 text-gray-500" />
+                  <Badge variant="outline" className="ml-2 bg-[#f39c12]/20 border-[#f39c12]/40 text-[#f39c12]">
+                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                    <span className="text-xs">Ready</span>
+                  </Badge>
                 </div>
               </Button>
             ) : (
               <Button 
                 className="w-full bg-[#1a1725]/50 hover:bg-[#241e38]/50 border border-[#2a2440] py-6 text-white flex justify-center"
                 onClick={generateGdflixMirror}
-                disabled={isGeneratingGdflix}
+                disabled={isGeneratingAny}
               >
                 <div className="flex items-center gap-2 justify-center">
                   {isGeneratingGdflix ? (
@@ -269,8 +313,6 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
 
           {/* Pixeldrain Section */}
           <div className="mb-6">
-            
-            
             {hasPixeldrainMirror ? (
               <Button 
                 variant="outline" 
@@ -281,13 +323,17 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#3498db]"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                   <span className="font-medium">Pixeldrain Mirror</span>
                   <ExternalLink className="w-4 h-4 ml-2 text-gray-500" />
+                  <Badge variant="outline" className="ml-2 bg-[#3498db]/20 border-[#3498db]/40 text-[#3498db]">
+                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                    <span className="text-xs">Ready</span>
+                  </Badge>
                 </div>
               </Button>
             ) : (
               <Button 
                 className="w-full bg-[#1a1725]/50 hover:bg-[#241e38]/50 border border-[#2a2440] py-6 text-white flex justify-center"
                 onClick={generatePixeldrainMirror}
-                disabled={isGeneratingPixeldrain}
+                disabled={isGeneratingAny}
               >
                 <div className="flex items-center gap-2 justify-center">
                   {isGeneratingPixeldrain ? (
@@ -306,7 +352,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
             <Button 
               variant="outline" 
               className="bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] text-white hover:text-white"
-              onClick={() => toast.info("QR Code feature - this is a demo")}
+              onClick={() => showToast('info', "QR Code feature - this is a demo", "qr-code-demo")}
             >
               <QrCode className="w-4 h-4 mr-2" />
               Show QR
@@ -326,7 +372,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId }) => {
             <Button 
               variant="outline" 
               className="w-full mt-4 bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] text-white hover:text-white"
-              onClick={() => toast.info("Watch Video feature - this is a demo")}
+              onClick={() => showToast('info', "Watch Video feature - this is a demo", "watch-video-demo")}
             >
               <PlayCircle className="w-4 h-4 mr-2" />
               Watch Video
