@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { FileProvider } from "@/contexts/FileContext";
-import { MirrorProvider } from "@/contexts/MirrorContext";
+import { MirrorProvider } from "@/contexts/MirrorContext"; // Added MirrorProvider
 
 // Layouts
 import SidebarLayout from "@/components/layouts/SidebarLayout";
@@ -42,7 +41,7 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <FileProvider>
-            <MirrorProvider>
+            <MirrorProvider> {/* Added MirrorProvider to wrap the app */}
               <TooltipProvider>
                 <div className="min-h-screen bg-oxxfile-dark flex flex-col">
                   <Routes>
@@ -84,7 +83,7 @@ const App = () => {
                       } 
                     />
 
-                    {/* Admin/Protected Routes - Ensure "admin" prefix in path */}
+                    {/* Admin/Protected Routes */}
                     <Route
                       path="/dashboard"
                       element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>}
@@ -117,20 +116,15 @@ const App = () => {
                       path="/file-queue"
                       element={<ProtectedRoute><FileQueue /></ProtectedRoute>}
                     />
-                    {/* Also add with "admin" prefix for compatibility */}
-                    <Route
-                      path="/admin/file-queue"
-                      element={<Navigate to="/file-queue" replace />}
-                    />
 
                     {/* Fallback Routes */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </div>
                 <Toaster />
-                <Sonner className="sonner-custom-theme" />
+                <Sonner />
               </TooltipProvider>
-            </MirrorProvider>
+            </MirrorProvider> {/* Closing MirrorProvider */}
           </FileProvider>
         </AuthProvider>
       </QueryClientProvider>

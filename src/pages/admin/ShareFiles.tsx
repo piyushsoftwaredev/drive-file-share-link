@@ -14,46 +14,13 @@ const ShareFiles = () => {
   const [preview, setPreview] = useState<{name: string, type: string} | null>(null);
   const { addFile, isLoading } = useFiles();
 
-  // Function to extract filename from a Google Drive URL
-  const extractFilename = (url: string): string | null => {
-    try {
-      if (!url.includes('drive.google.com')) return null;
-      
-      // Try to extract from URL path or query parameters
-      const urlObj = new URL(url);
-      const pathParts = urlObj.pathname.split('/');
-      let fileName = null;
-      
-      // For shared files that might have names in the URL
-      if (pathParts.length > 2 && pathParts[1] === 'file' && pathParts[2] === 'd') {
-        // Look for filename in the URL or params
-        const queryParams = new URLSearchParams(urlObj.search);
-        fileName = queryParams.get('filename') || queryParams.get('name');
-      }
-      
-      // Try to decode URL encoded filenames
-      if (fileName) {
-        try {
-          fileName = decodeURIComponent(fileName.replace(/\+/g, ' '));
-        } catch (e) {
-          // If decoding fails, use the original
-        }
-      }
-      
-      return fileName || "Preview file";
-    } catch (e) {
-      console.error("Error extracting filename", e);
-      return null;
-    }
-  };
-
   const handlePreviewUrl = () => {
     // Extract file name from URL if possible
     if (driveUrl) {
-      const extractedName = extractFilename(driveUrl);
+      // This is just a placeholder, we'd normally extract more information from the URL
       setPreview({
-        name: extractedName || "Preview file",
-        type: extractedName?.split('.').pop()?.toUpperCase() || "MKV"
+        name: "Preview file",
+        type: "MKV"
       });
     }
   };
@@ -89,7 +56,7 @@ const ShareFiles = () => {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-white">Share Files</h1>
       
-      <Card className="bg-gray-900 border-gray-800">
+      <Card className="bg-gray-900/60 border-gray-800">
         <CardHeader>
           <CardTitle className="text-white">Share Google Drive File</CardTitle>
         </CardHeader>
@@ -111,7 +78,7 @@ const ShareFiles = () => {
             
             <Button 
               type="submit" 
-              className="w-full bg-oxxfile-purple hover:bg-oxxfile-purple/90 text-white"
+              className="w-full bg-oxxfile-purple hover:bg-oxxfile-purple/90"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -128,7 +95,7 @@ const ShareFiles = () => {
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-gray-900/60 border-gray-800">
           <CardHeader>
             <CardTitle className="text-white">File Preview</CardTitle>
           </CardHeader>
@@ -144,7 +111,7 @@ const ShareFiles = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-gray-900/60 border-gray-800">
           <CardHeader>
             <CardTitle className="text-white">Connection Options</CardTitle>
           </CardHeader>
@@ -162,7 +129,7 @@ const ShareFiles = () => {
                       <span className="text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded mr-2">
                         Active
                       </span>
-                      <RefreshCw className="w-3.5 h-3.5 text-gray-500 hover:text-white" />
+                      <RefreshCw className="w-3.5 h-3.5 text-gray-500" />
                     </div>
                   </div>
                   
@@ -175,7 +142,7 @@ const ShareFiles = () => {
                       <span className="text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded mr-2">
                         Active
                       </span>
-                      <RefreshCw className="w-3.5 h-3.5 text-gray-500 hover:text-white cursor-pointer" />
+                      <RefreshCw className="w-3.5 h-3.5 text-gray-500" />
                     </div>
                   </div>
                   
@@ -188,7 +155,7 @@ const ShareFiles = () => {
                       <span className="text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded mr-2">
                         Active
                       </span>
-                      <RefreshCw className="w-3.5 h-3.5 text-gray-500 hover:text-white cursor-pointer" />
+                      <RefreshCw className="w-3.5 h-3.5 text-gray-500" />
                     </div>
                   </div>
                 </div>
