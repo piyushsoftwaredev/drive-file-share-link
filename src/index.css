@@ -126,3 +126,46 @@
   @apply text-white;
 }
 
+/* Glassmorphism styling */
+.glass {
+  @apply backdrop-blur-lg bg-white/5 border border-white/10 rounded-xl;
+}
+
+.glass-dark {
+  @apply backdrop-blur-lg bg-black/30 border border-white/5 rounded-xl;
+}
+
+/* Glowing elements */
+.glow {
+  @apply relative;
+}
+
+.glow::before {
+  content: '';
+  @apply absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/20 to-blue-500/20 blur-xl opacity-50 -z-10;
+}
+
+/* Gradient text */
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-oxxfile-purple to-oxxfile-purple-light;
+}
+
+/* Gradient buttons */
+.gradient-button {
+  @apply bg-gradient-to-r from-oxxfile-purple to-oxxfile-purple-dark hover:from-oxxfile-purple-dark hover:to-oxxfile-purple text-white rounded-lg transition-all duration-200;
+}
+
+/* Card with gradient border */
+.gradient-border {
+  @apply relative rounded-xl overflow-hidden;
+}
+
+.gradient-border::before {
+  content: '';
+  @apply absolute inset-0 rounded-xl p-[1px] bg-gradient-to-r from-oxxfile-purple/50 to-oxxfile-blue/50;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
