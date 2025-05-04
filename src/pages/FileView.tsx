@@ -48,7 +48,7 @@ const FileView = () => {
     <div className="min-h-screen bg-gradient-to-b from-[#0f0a19] via-[#16121f] to-[#1d1730] py-4 px-2 md:py-8 md:px-4">
       <div className="container mx-auto max-w-3xl">
         {isAdmin && (
-          <div className="mb-4 bg-gradient-to-r from-[#2a1e4a] to-[#3d1e70] p-3 rounded-xl border border-[#4c2c8f] shadow-lg">
+          <div className="mb-4 bg-gradient-to-r from-[#2a1e4a] to-[#3d1e70] p-3 rounded-2xl border border-[#4c2c8f] shadow-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center text-white gap-2">
                 <Shield className="h-5 w-5 text-[#9b87f5]" />
@@ -58,7 +58,7 @@ const FileView = () => {
                 <Button 
                   size="sm"
                   variant="outline" 
-                  className="bg-[#2a1e4a]/60 text-white border-[#4c2c8f] hover:bg-[#3d1e70] hover:text-white rounded-lg"
+                  className="rounded-xl bg-[#2a1e4a]/60 text-white border-[#4c2c8f] hover:bg-[#3d1e70] hover:text-white"
                   onClick={() => toast.info("Edit functionality is a demo")}
                 >
                   Edit File
@@ -66,7 +66,7 @@ const FileView = () => {
                 <Button 
                   size="sm"
                   variant="destructive"
-                  className="rounded-lg"
+                  className="rounded-xl"
                   onClick={() => toast.info("Delete functionality is a demo")}
                 >
                   Remove File
@@ -85,7 +85,7 @@ const FileView = () => {
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="bg-[#1a1725] p-8 rounded-xl border border-[#2a2440] shadow-lg w-full max-w-md">
+            <div className="bg-[#1a1725] p-8 rounded-2xl border border-[#2a2440] shadow-lg w-full max-w-md">
               <FileX className="w-16 h-16 text-red-500 mb-4 mx-auto" />
               <h2 className="text-white text-xl font-bold mb-2">File Not Found</h2>
               <p className="text-gray-400 mb-6">{error}</p>
@@ -93,13 +93,13 @@ const FileView = () => {
                 <Button 
                   variant="outline" 
                   onClick={() => navigate('/')}
-                  className="border-gray-700 text-white hover:bg-gray-800 rounded-lg"
+                  className="border-gray-700 text-white hover:bg-gray-800 rounded-xl"
                 >
                   Go to Home
                 </Button>
                 <Button 
                   onClick={() => window.location.reload()}
-                  className="bg-oxxfile-purple hover:bg-oxxfile-purple/90 rounded-lg"
+                  className="bg-oxxfile-purple hover:bg-oxxfile-purple/90 rounded-xl"
                 >
                   Try Again
                 </Button>
@@ -110,7 +110,7 @@ const FileView = () => {
           <FileDetails fileId={fileId} isAdmin={isAdmin} />
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="bg-[#1a1725] p-8 rounded-xl border border-[#2a2440] shadow-lg w-full max-w-md">
+            <div className="bg-[#1a1725] p-8 rounded-2xl border border-[#2a2440] shadow-lg w-full max-w-md">
               <AlertCircle className="w-16 h-16 text-amber-500 mb-4 mx-auto" />
               <h2 className="text-white text-xl font-bold mb-2">Something Went Wrong</h2>
               <p className="text-gray-400 mb-6">
@@ -118,7 +118,7 @@ const FileView = () => {
               </p>
               <Button 
                 onClick={() => navigate('/')}
-                className="bg-oxxfile-purple hover:bg-oxxfile-purple/90 rounded-lg"
+                className="bg-oxxfile-purple hover:bg-oxxfile-purple/90 rounded-xl"
               >
                 Return to Home
               </Button>
