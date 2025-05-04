@@ -4,14 +4,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import FileDetails from '@/components/FileDetails';
 import { useFiles } from '@/contexts/FileContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, FileX, AlertCircle, Shield } from 'lucide-react';
+import { Loader2, FileX, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
 const FileView = () => {
   const { id } = useParams<{ id: string }>();
   const { getFileById, files } = useFiles();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,35 +47,6 @@ const FileView = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0812] via-[#100b19] to-[#170e2d] py-4 px-2 md:py-8 md:px-4">
       <div className="container mx-auto max-w-3xl">
-        {isAdmin && (
-          <div className="mb-4 bg-gradient-to-r from-[#2a1e4a] to-[#3d1e70] p-3 rounded-2xl border border-[#4c2c8f] shadow-lg glass">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center text-white gap-2">
-                <Shield className="h-5 w-5 text-[#9b87f5]" />
-                <span>Admin Controls</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button 
-                  size="sm"
-                  variant="outline" 
-                  className="rounded-xl bg-[#2a1e4a]/60 text-white border-[#4c2c8f] hover:bg-[#3d1e70] hover:text-white"
-                  onClick={() => toast.info("Edit functionality is a demo")}
-                >
-                  Edit File
-                </Button>
-                <Button 
-                  size="sm"
-                  variant="destructive"
-                  className="rounded-xl"
-                  onClick={() => toast.info("Delete functionality is a demo")}
-                >
-                  Remove File
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-        
         {isLoading ? (
           <div className="flex justify-center items-center py-20">
             <div className="flex flex-col items-center">

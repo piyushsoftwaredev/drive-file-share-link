@@ -16,9 +16,9 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0a0812] to-[#0f0a19] px-4">
-      <div className="text-center bg-[#0f0a19]/80 p-8 rounded-2xl backdrop-blur-md border border-[#2a2440] shadow-2xl max-w-md w-full glass-dark">
+      <div className="text-center bg-[#0f0a19]/80 p-8 rounded-2xl backdrop-blur-md border border-[#2a2440] shadow-2xl max-w-md w-full">
         <div className="flex justify-center mb-6">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-red-500/20 to-red-700/20 flex items-center justify-center glow">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-red-500/20 to-red-700/20 flex items-center justify-center">
             <FileX className="h-12 w-12 text-red-500" />
           </div>
         </div>
