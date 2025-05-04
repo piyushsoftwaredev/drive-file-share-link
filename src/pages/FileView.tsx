@@ -48,7 +48,7 @@ const FileView = () => {
     <div className="min-h-screen bg-gradient-to-b from-[#0f0a19] via-[#16121f] to-[#1d1730] py-4 px-2 md:py-8 md:px-4">
       <div className="container mx-auto max-w-3xl">
         {isAdmin && (
-          <div className="mb-4 bg-gradient-to-r from-[#2a1e4a] to-[#3d1e70] p-3 rounded-2xl border border-[#4c2c8f] shadow-lg">
+          <div className="mb-4 bg-gradient-to-r from-[#2a1e4a] to-[#3d1e70] p-3 rounded-2xl border border-[#4c2c8f] shadow-lg glass">
             <div className="flex items-center justify-between">
               <div className="flex items-center text-white gap-2">
                 <Shield className="h-5 w-5 text-[#9b87f5]" />
@@ -85,7 +85,7 @@ const FileView = () => {
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="bg-[#1a1725] p-8 rounded-2xl border border-[#2a2440] shadow-lg w-full max-w-md">
+            <div className="bg-[#1a1725] p-8 rounded-2xl border border-[#2a2440] shadow-lg w-full max-w-md glass-dark">
               <FileX className="w-16 h-16 text-red-500 mb-4 mx-auto" />
               <h2 className="text-white text-xl font-bold mb-2">File Not Found</h2>
               <p className="text-gray-400 mb-6">{error}</p>
@@ -110,7 +110,7 @@ const FileView = () => {
           <FileDetails fileId={fileId} isAdmin={isAdmin} />
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="bg-[#1a1725] p-8 rounded-2xl border border-[#2a2440] shadow-lg w-full max-w-md">
+            <div className="bg-[#1a1725] p-8 rounded-2xl border border-[#2a2440] shadow-lg w-full max-w-md glass-dark">
               <AlertCircle className="w-16 h-16 text-amber-500 mb-4 mx-auto" />
               <h2 className="text-white text-xl font-bold mb-2">Something Went Wrong</h2>
               <p className="text-gray-400 mb-6">
