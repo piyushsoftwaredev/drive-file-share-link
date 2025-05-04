@@ -20,7 +20,7 @@ import {
   CheckCircle2,
   ShieldCheck,
   Copy,
-  FileAnalytics
+  FileBarChart2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
@@ -211,7 +211,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId, isAdmin = false }) =>
                   variant="outline"
                   className="rounded-lg bg-[#1a1725]/80 border-[#4c2c8f]/50 text-white hover:bg-[#281e4a] flex gap-1 items-center"
                   onClick={() => {
-                    navigator.clipboard.writeText(file.driveId || fileId);
+                    navigator.clipboard.writeText(file.googleDriveId || fileId);
                     showToast('success', "Drive ID copied to clipboard", "copy-id");
                   }}
                 >
@@ -224,7 +224,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId, isAdmin = false }) =>
                   className="rounded-lg bg-[#4c2c8f] hover:bg-[#5d37a8] flex gap-1 items-center"
                   onClick={() => showToast('info', "File analytics feature is a demo", "analytics-demo")}
                 >
-                  <FileAnalytics className="w-3.5 h-3.5" />
+                  <FileBarChart2 className="w-3.5 h-3.5" />
                   <span>Analytics</span>
                 </Button>
               </div>

@@ -37,7 +37,7 @@ const FileView = () => {
     }, 500);
     
     return () => clearTimeout(timer);
-  }, [fileId, files, navigate]);
+  }, [fileId, files, navigate, getFileById]);
 
   // Handle no fileId case right away
   if (!fileId) {
