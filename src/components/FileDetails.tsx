@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useFiles } from '@/contexts/FileContext';
 import FileIcon from './FileIcon';
@@ -20,7 +19,8 @@ import {
   CheckCircle2,
   ShieldCheck,
   Copy,
-  FileBarChart2
+  FileBarChart2,
+  Save
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
@@ -63,7 +63,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId, isAdmin = false }) =>
 
   if (!file) {
     return (
-      <Card className="w-full max-w-3xl mx-auto p-8 bg-gray-900/50 border-gray-800 rounded-xl">
+      <Card className="w-full max-w-3xl mx-auto p-8 bg-[#0a0812]/50 border-gray-800 rounded-xl">
         <h2 className="text-2xl font-bold text-white mb-4">File not found</h2>
         <p className="text-gray-400">The requested file could not be found.</p>
       </Card>
@@ -159,6 +159,11 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId, isAdmin = false }) =>
     }
   };
 
+  // Function to save queue options
+  const saveQueueOptions = () => {
+    showToast('success', "Queue options saved successfully", "save-queue-options");
+  };
+
   const isVideoFile = ['mp4', 'mkv', 'avi', 'mov'].includes(fileExtension.toLowerCase());
 
   // Check if GDflix mirror is available
@@ -173,7 +178,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId, isAdmin = false }) =>
   const isGeneratingAny = isGeneratingGdflix || isGeneratingPixeldrain;
 
   return (
-    <div className="rounded-xl overflow-hidden bg-[#14121d] bg-opacity-80 border border-[#2a2440] backdrop-blur-sm shadow-xl">
+    <div className="rounded-xl overflow-hidden bg-[#0a0812] bg-opacity-90 border border-[#2a2440] backdrop-blur-sm shadow-xl">
       {/* File name header in gradient container */}
       <div className="bg-gradient-to-r from-[#1e1736] to-[#281e4a] p-4 rounded-t-xl">
         <div className="flex items-start gap-4">
@@ -230,12 +235,47 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId, isAdmin = false }) =>
               </div>
             </div>
           </div>
+          
+          {/* Queue Options Section for Admin */}
+          <div className="bg-[#0f0a19] p-4 rounded-lg border border-[#2a2440] mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-white font-medium">Queue Options</h3>
+              <Button 
+                size="sm" 
+                onClick={saveQueueOptions}
+                className="rounded-lg bg-gradient-to-r from-[#4c2c8f] to-[#3d1e70] hover:from-[#5d37a8] hover:to-[#4c2c8f] flex gap-1 items-center"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Save</span>
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="bg-[#1a1725]/50 p-3 rounded-lg border border-[#2a2440]">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-300">Priority</span>
+                  <Badge variant="outline" className="bg-[#3d1e70]/30 text-[#9b87f5] border-[#4c2c8f]/50">
+                    High
+                  </Badge>
+                </div>
+              </div>
+              
+              <div className="bg-[#1a1725]/50 p-3 rounded-lg border border-[#2a2440]">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-300">Auto-Generate</span>
+                  <Badge variant="outline" className="bg-[#3d1e70]/30 text-[#9b87f5] border-[#4c2c8f]/50">
+                    Enabled
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {/* File details */}
       <div className="p-4 md:p-6">
-        <div className="bg-gradient-to-b from-[#1a1725] to-[#1e1830] rounded-xl p-4 mb-6 border border-[#2a2440]">
+        <div className="bg-gradient-to-b from-[#0f0a19] to-[#13101e] rounded-xl p-4 mb-6 border border-[#2a2440]">
           <div className="grid grid-cols-2 gap-y-4">
             <div className="flex items-center gap-2">
               <div className="text-gray-400 flex items-center gap-1">
@@ -318,12 +358,106 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId, isAdmin = false }) =>
 
           <Separator className="bg-[#2a2440] mb-4" />
 
+          {/* HubCloud Download Button */}
+          <Button
+            variant="outline"
+            className="w-full mb-3 text-white justify-center py-5 rounded-xl bg-gradient-to-r from-[#2563eb]/20 to-[#1d4ed8]/20 hover:from-[#2563eb]/30 hover:to-[#1d4ed8]/30 border-[#3b82f6]/30 shadow-sm"
+            onClick={() => showToast('info', "HubCloud Download - This is a demo", "hubcloud-demo")}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="text-[#3b82f6]" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 22H7a2 2 0 0 1-2-2V7"></path><path d="M13 5V2.13a2.98 2.98 0 0 0-1.293.749L7.879 6.707A2.98 2.98 0 0 0 7.13 8H10"></path><path d="M13 5h6a2 2 0 0 1 2 2v4"></path><path d="M19 15v1.5a2.5 2.5 0 0 1-5 0V15"></path><path d="M2 14h16"></path><path d="M19 18v4"></path><path d="M22 18v4"></path></svg>
+              <span className="font-medium">HubCloud Download</span>
+            </div>
+          </Button>
+
+          {/* Instant Download */}
+          <Button
+            variant="outline"
+            className="w-full mb-3 text-white justify-center py-5 rounded-xl bg-gradient-to-r from-[#1e40af]/20 to-[#172554]/20 hover:from-[#1e40af]/30 hover:to-[#172554]/30 border-[#2563eb]/30 shadow-sm"
+            onClick={() => showToast('info', "Instant Download - This is a demo", "instant-demo")}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="text-[#2563eb]" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 17l4 4 4-4"></path><path d="M12 12v9"></path><path d="m20 16-4 4-4-4"></path><path d="M4 8l4-4 4 4"></path><path d="M4 16l4 4 4-4"></path><path d="M12 3v9"></path></svg>
+              <span className="font-medium">Instant Download</span>
+              <Badge className="bg-blue-800/50 text-blue-300 border-blue-500/30 ml-2 text-[10px] py-0">shiny-grass-8b8b</Badge>
+            </div>
+          </Button>
+
+          {/* Pixeldrain Download */}
+          {hasPixeldrainMirror ? (
+            <Button 
+              variant="outline" 
+              className="w-full mb-3 text-white justify-center py-5 rounded-xl bg-gradient-to-r from-[#7c2d12]/20 to-[#431407]/20 hover:from-[#7c2d12]/30 hover:to-[#431407]/30 border-[#ea580c]/30 shadow-sm"
+              onClick={() => handleDownloadClick('pixeldrain')}
+            >
+              <div className="flex items-center gap-2">
+                <svg className="text-[#ea580c]" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span className="font-medium">Pixeldrain Download</span>
+                <Badge variant="outline" className="ml-2 bg-[#7c2d12]/20 border-[#ea580c]/40 text-[#ea580c] rounded-full">
+                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                  <span className="text-xs">Ready</span>
+                </Badge>
+              </div>
+            </Button>
+          ) : (
+            <Button 
+              className="w-full mb-3 bg-gradient-to-r from-[#7c2d12]/20 to-[#431407]/20 hover:from-[#7c2d12]/30 hover:to-[#431407]/30 border border-[#ea580c]/30 py-5 text-white flex justify-center rounded-xl"
+              onClick={generatePixeldrainMirror}
+              disabled={isGeneratingAny}
+            >
+              <div className="flex items-center gap-2 justify-center">
+                {isGeneratingPixeldrain ? (
+                  <RefreshCw className="w-4 h-4 animate-spin text-[#ea580c]" />
+                ) : (
+                  <svg className="text-[#ea580c]" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                )}
+                <span>{isGeneratingPixeldrain ? 'Generating Pixeldrain mirror...' : 'Generate Pixeldrain Mirror'}</span>
+              </div>
+            </Button>
+          )}
+
+          {/* Viking File Download */}
+          <Button
+            variant="outline"
+            className="w-full mb-3 text-white justify-center py-5 rounded-xl bg-gradient-to-r from-[#4c1d95]/20 to-[#2e1065]/20 hover:from-[#4c1d95]/30 hover:to-[#2e1065]/30 border-[#8b5cf6]/30 shadow-sm"
+            onClick={() => showToast('info', "Viking File Download - This is a demo", "viking-demo")}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="text-[#8b5cf6]" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 12a4 4 0 0 0-8 0"></path><circle cx="10" cy="6" r="2"></circle><path d="M15 9.354a4 4 0 1 1 0 5.292"></path><path d="M18 10a2 2 0 1 0 0 4"></path><path d="M16.5 15a2.5 2.5 0 1 1-5 0"></path></svg>
+              <span className="font-medium">Viking File Download</span>
+            </div>
+          </Button>
+
+          {/* GDToT Download */}
+          <Button
+            variant="outline"
+            className="w-full mb-3 text-white justify-center py-5 rounded-xl bg-gradient-to-r from-[#1e3a8a]/20 to-[#172554]/20 hover:from-[#1e3a8a]/30 hover:to-[#172554]/30 border-[#3b82f6]/30 shadow-sm"
+            onClick={() => showToast('info', "GDToT Download - This is a demo", "gdtot-demo")}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="text-[#3b82f6]" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 4H8a3 3 0 0 0-3 3v3"></path><path d="M7 20h11a3 3 0 0 0 3-3v-9"></path><path d="M13 8h.01"></path><path d="M18 8h.01"></path><path d="M16 13h.01"></path><path d="M20 13h.01"></path><path d="M23 13h.01"></path><path d="M14 18h.01"></path><path d="M19 18h.01"></path><path d="M4 14h3a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1Z"></path></svg>
+              <span className="font-medium">GDToT Download</span>
+            </div>
+          </Button>
+
+          {/* Filepress Download */}
+          <Button
+            variant="outline"
+            className="w-full mb-6 text-white justify-center py-5 rounded-xl bg-gradient-to-r from-[#065f46]/20 to-[#064e3b]/20 hover:from-[#065f46]/30 hover:to-[#064e3b]/30 border-[#10b981]/30 shadow-sm"
+            onClick={() => showToast('info', "Filepress Download - This is a demo", "filepress-demo")}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="text-[#10b981]" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><polygon points="10 13 8 17 12 17 14 13"></polygon></svg>
+              <span className="font-medium">Filepress Download</span>
+            </div>
+          </Button>
+
           {/* GDflix Section */}
-          <div className="mb-4">
+          <div className="mb-4 hidden">
             {hasGdflixMirror ? (
               <Button 
                 variant="outline" 
-                className="w-full text-left justify-center bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] py-6 text-white hover:text-white rounded-xl"
+                className="w-full text-left justify-center bg-[#0a0812]/50 hover:bg-[#241e38]/50 border-[#2a2440] py-6 text-white hover:text-white rounded-xl"
                 onClick={() => handleDownloadClick('gdflix')}
               >
                 <div className="flex items-center gap-2">
@@ -338,7 +472,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId, isAdmin = false }) =>
               </Button>
             ) : (
               <Button 
-                className="w-full bg-gradient-to-r from-[#1a1725]/50 to-[#241e38]/50 hover:from-[#241e38]/60 hover:to-[#2c2545]/60 border border-[#2a2440] py-6 text-white flex justify-center rounded-xl"
+                className="w-full bg-gradient-to-r from-[#0a0812]/50 to-[#241e38]/50 hover:from-[#241e38]/60 hover:to-[#2c2545]/60 border border-[#2a2440] py-6 text-white flex justify-center rounded-xl"
                 onClick={generateGdflixMirror}
                 disabled={isGeneratingAny}
               >
@@ -354,47 +488,11 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId, isAdmin = false }) =>
             )}
           </div>
 
-          {/* Pixeldrain Section */}
-          <div className="mb-6">
-            {hasPixeldrainMirror ? (
-              <Button 
-                variant="outline" 
-                className="w-full text-left justify-center bg-[#1a1725]/50 hover:bg-[#241e38]/50 border-[#2a2440] py-6 text-white hover:text-white rounded-xl"
-                onClick={() => handleDownloadClick('pixeldrain')}
-              >
-                <div className="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#3498db]"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                  <span className="font-medium">Pixeldrain Mirror</span>
-                  <ExternalLink className="w-4 h-4 ml-2 text-gray-500" />
-                  <Badge variant="outline" className="ml-2 bg-[#3498db]/20 border-[#3498db]/40 text-[#3498db] rounded-full">
-                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                    <span className="text-xs">Ready</span>
-                  </Badge>
-                </div>
-              </Button>
-            ) : (
-              <Button 
-                className="w-full bg-gradient-to-r from-[#1a1725]/50 to-[#241e38]/50 hover:from-[#241e38]/60 hover:to-[#2c2545]/60 border border-[#2a2440] py-6 text-white flex justify-center rounded-xl"
-                onClick={generatePixeldrainMirror}
-                disabled={isGeneratingAny}
-              >
-                <div className="flex items-center gap-2 justify-center">
-                  {isGeneratingPixeldrain ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#3498db]"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                  )}
-                  <span>{isGeneratingPixeldrain ? 'Generating Pixeldrain mirror...' : 'Generate Pixeldrain Mirror'}</span>
-                </div>
-              </Button>
-            )}
-          </div>
-
           {/* Other file options */}
           <div className="grid grid-cols-2 gap-3 mt-4">
             <Button 
               variant="outline" 
-              className="bg-gradient-to-r from-[#1a1725]/50 to-[#241e38]/50 hover:from-[#241e38]/60 hover:to-[#2c2545]/60 border-[#2a2440] text-white hover:text-white rounded-lg"
+              className="bg-gradient-to-r from-[#0a0812]/80 to-[#14101d]/80 hover:from-[#14101d]/90 hover:to-[#1a1428]/90 border-[#2a2440] text-white hover:text-white rounded-lg"
               onClick={() => showToast('info', "QR Code feature - this is a demo", "qr-code-demo")}
             >
               <QrCode className="w-4 h-4 mr-2" />
@@ -403,7 +501,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId, isAdmin = false }) =>
             
             <Button 
               variant="outline" 
-              className="bg-gradient-to-r from-[#1a1725]/50 to-[#241e38]/50 hover:from-[#241e38]/60 hover:to-[#2c2545]/60 border-[#2a2440] text-white hover:text-white rounded-lg"
+              className="bg-gradient-to-r from-[#0a0812]/80 to-[#14101d]/80 hover:from-[#14101d]/90 hover:to-[#1a1428]/90 border-[#2a2440] text-white hover:text-white rounded-lg"
               onClick={handleCopyShareLink}
             >
               <Share2 className="w-4 h-4 mr-2" />
@@ -414,7 +512,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId, isAdmin = false }) =>
           {isVideoFile && (
             <Button 
               variant="outline" 
-              className="w-full mt-4 bg-gradient-to-r from-[#1a1725]/50 to-[#241e38]/50 hover:from-[#241e38]/60 hover:to-[#2c2545]/60 border-[#2a2440] text-white hover:text-white rounded-lg"
+              className="w-full mt-4 bg-gradient-to-r from-[#0a0812]/80 to-[#14101d]/80 hover:from-[#14101d]/90 hover:to-[#1a1428]/90 border-[#2a2440] text-white hover:text-white rounded-lg"
               onClick={() => showToast('info', "Watch Video feature - this is a demo", "watch-video-demo")}
             >
               <PlayCircle className="w-4 h-4 mr-2" />
