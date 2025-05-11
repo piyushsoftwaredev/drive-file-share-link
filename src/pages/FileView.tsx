@@ -18,7 +18,6 @@ const FileView = () => {
 
   const fileId = id || '';
   const file = getFileById(fileId);
-  const isAdmin = user?.isAdmin || false;
 
   useEffect(() => {
     if (!fileId) {
