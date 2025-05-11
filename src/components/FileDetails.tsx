@@ -480,4 +480,49 @@ const FileDetails: React.FC<FileDetailsProps> = ({ fileId, isAdmin = false }) =>
                   {isGeneratingGdflix ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#f39c12]"><path d="M8 17L12 21L16 17"></path><path d="M12 12V21"></path
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#f39c12]"><path d="M8 17L12 21L16 17"></path><path d="M12 12V21"></path><path d="M20.88 18.09C22.08 17.08 22.73 15.53 22.73 13.88C22.73 10.64 20.13 8.04 16.89 8.04C16.24 7.04 15.28 6.26 14.12 5.77C12.96 5.28 11.66 5.11 10.4 5.29C9.14 5.47 7.97 6 7.04 6.81C6.1 7.63 5.44 8.69 5.15 9.87C3.87 10.09 2.73 10.84 1.96 11.93C1.19 13.03 0.850122 14.39 0.999783 15.75C1.14944 17.11 1.77932 18.36 2.79133 19.23C3.80334 20.1 5.1162 20.54 6.5 20.5H7.5"></path></svg>
+                  )}
+                  <span>{isGeneratingGdflix ? 'Generating GDflix mirror...' : 'Generate GDflix Mirror'}</span>
+                </div>
+              </Button>
+            )}
+          </div>
+
+          {/* Other file options */}
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <Button 
+              variant="outline" 
+              className="bg-gradient-to-r from-[#0a0812]/80 to-[#14101d]/80 hover:from-[#14101d]/90 hover:to-[#1a1428]/90 border-[#2a2440] text-white hover:text-white rounded-lg"
+              onClick={() => showToast('info', "QR Code feature - this is a demo", "qr-code-demo")}
+            >
+              <QrCode className="w-4 h-4 mr-2" />
+              Show QR
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="bg-gradient-to-r from-[#0a0812]/80 to-[#14101d]/80 hover:from-[#14101d]/90 hover:to-[#1a1428]/90 border-[#2a2440] text-white hover:text-white rounded-lg"
+              onClick={handleCopyShareLink}
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
+            </Button>
+          </div>
+          
+          {isVideoFile && (
+            <Button 
+              variant="outline" 
+              className="w-full mt-4 bg-gradient-to-r from-[#0a0812]/80 to-[#14101d]/80 hover:from-[#14101d]/90 hover:to-[#1a1428]/90 border-[#2a2440] text-white hover:text-white rounded-lg"
+              onClick={() => showToast('info', "Watch Video feature - this is a demo", "watch-video-demo")}
+            >
+              <PlayCircle className="w-4 h-4 mr-2" />
+              Watch Video
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default FileDetails;

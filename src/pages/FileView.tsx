@@ -18,6 +18,7 @@ const FileView = () => {
 
   const fileId = id || '';
   const file = getFileById(fileId);
+  const isAdmin = user?.isAdmin || false;
 
   useEffect(() => {
     if (!fileId) {
@@ -77,7 +78,7 @@ const FileView = () => {
             </div>
           </div>
         ) : file ? (
-          <FileDetails fileId={fileId} isAdmin={false} />
+          <FileDetails fileId={fileId} isAdmin={isAdmin} />
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="bg-[#0f0a19] p-8 rounded-2xl border border-[#2a2440] shadow-lg w-full max-w-md glass-dark">
